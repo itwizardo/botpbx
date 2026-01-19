@@ -39,8 +39,8 @@ export class PromptRepository {
 
     await this.db.run(
       `INSERT INTO prompts (id, name, type, file_path, text, voice, tenant_id, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
-      [id, prompt.name, prompt.type, prompt.filePath, prompt.text, prompt.voice, tenantId]
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [id, prompt.name, prompt.type, prompt.filePath, prompt.text, prompt.voice, tenantId, createdAt]
     );
 
     dbLogger.info(`Prompt created: ${id} (${prompt.name}) for tenant ${tenantId}`);

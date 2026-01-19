@@ -75,8 +75,8 @@ export class CampaignContactRepository {
 
     await this.db.run(
       `INSERT INTO campaign_contacts (id, campaign_id, phone_number, name, created_at)
-       VALUES ($1, $2, $3, $4, NOW())`,
-      [id, campaignId, contact.phoneNumber, contact.name || null]
+       VALUES ($1, $2, $3, $4, $5)`,
+      [id, campaignId, contact.phoneNumber, contact.name || null, createdAt]
     );
 
     return {
@@ -106,10 +106,11 @@ export class CampaignContactRepository {
     await this.db.transaction(async () => {
       for (const contact of contacts) {
         const id = uuidv4();
+        const createdAt = Math.floor(Date.now() / 1000);
         await this.db.run(
           `INSERT INTO campaign_contacts (id, campaign_id, phone_number, name, created_at)
-           VALUES ($1, $2, $3, $4, NOW())`,
-          [id, campaignId, contact.phoneNumber, contact.name || null]
+           VALUES ($1, $2, $3, $4, $5)`,
+          [id, campaignId, contact.phoneNumber, contact.name || null, createdAt]
         );
         created++;
       }

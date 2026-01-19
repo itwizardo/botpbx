@@ -52,11 +52,12 @@ export class CallLogRepository {
 
     await this.db.run(
       `INSERT INTO call_logs (id, caller_id, did, timestamp, ivr_menu_id, options_pressed, final_destination, duration_seconds, disposition, unique_id, tenant_id)
-       VALUES ($1, $2, $3, NOW(), $4, $5, $6, $7, $8, $9, $10)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [
         id,
         log.callerId,
         log.did,
+        timestamp,
         log.ivrMenuId,
         log.optionsPressed,
         log.finalDestination,

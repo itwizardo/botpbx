@@ -71,7 +71,7 @@ export class IVRMenuRepository {
 
     await this.db.run(
       `INSERT INTO ivr_menus (id, name, welcome_prompt_id, invalid_prompt_id, timeout_prompt_id, timeout_seconds, max_retries, created_at, tenant_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
       [
         id,
         menu.name,
@@ -80,6 +80,7 @@ export class IVRMenuRepository {
         menu.timeoutPromptId,
         menu.timeoutSeconds,
         menu.maxRetries,
+        createdAt,
         tenantId,
       ]
     );

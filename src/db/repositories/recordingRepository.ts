@@ -62,8 +62,8 @@ export class RecordingRepository {
 
     await this.db.run(
       `INSERT INTO call_recordings (id, call_log_id, unique_id, file_path, status, started_at)
-       VALUES ($1, $2, $3, $4, 'recording', NOW())`,
-      [id, data.callLogId || null, data.uniqueId, data.filePath]
+       VALUES ($1, $2, $3, $4, 'recording', $5)`,
+      [id, data.callLogId || null, data.uniqueId, data.filePath, startedAt]
     );
 
     dbLogger.debug(`Recording started: ${id} for call ${data.uniqueId}`);

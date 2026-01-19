@@ -65,7 +65,7 @@ export class ExtensionRepository {
     await this.db.run(
       `INSERT INTO extensions (number, name, password, enabled, tenant_id)
        VALUES ($1, $2, $3, $4, $5)`,
-      [extension.number, extension.name, extension.password, extension.enabled, tenantId]
+      [extension.number, extension.name, extension.password, extension.enabled ? 1 : 0, tenantId]
     );
 
     dbLogger.info(`Extension created: ${extension.number} (${extension.name}) for tenant ${tenantId}`);
@@ -158,7 +158,7 @@ export class ExtensionRepository {
     }
     if (updates.enabled !== undefined) {
       fields.push(`enabled = $${paramIndex++}`);
-      values.push(updates.enabled);
+      values.push(updates.enabled ? 1 : 0);
     }
     if (updates.forwardNumber !== undefined) {
       fields.push(`forward_number = $${paramIndex++}`);

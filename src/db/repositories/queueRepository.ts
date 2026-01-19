@@ -147,7 +147,7 @@ export class QueueRepository {
        position_announce_enabled, position_announce_voice, position_announce_provider,
        position_announce_language, position_announce_interval, position_announce_variations,
        enabled, created_at, tenant_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, NOW(), $18)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`,
       [
         id,
         queue.name,
@@ -165,7 +165,8 @@ export class QueueRepository {
         queue.positionAnnounceLanguage,
         queue.positionAnnounceInterval,
         queue.positionAnnounceVariations ? JSON.stringify(queue.positionAnnounceVariations) : null,
-        queue.enabled,
+        queue.enabled ? 1 : 0,
+        createdAt,
         tenantId,
       ]
     );
@@ -359,7 +360,7 @@ export class QueueRepository {
     }
     if (updates.enabled !== undefined) {
       fields.push(`enabled = $${paramIndex++}`);
-      values.push(updates.enabled);
+      values.push(updates.enabled ? 1 : 0);
     }
 
     if (fields.length > 0) {
@@ -421,8 +422,8 @@ export class QueueRepository {
     try {
       await this.db.run(
         `INSERT INTO queue_members (id, queue_id, extension_number, penalty, paused, created_at)
-         VALUES ($1, $2, $3, $4, false, NOW())`,
-        [id, queueId, extensionNumber, penalty]
+         VALUES ($1, $2, $3, $4, 0, $5)`,
+        [id, queueId, extensionNumber, penalty, createdAt]
       );
 
       dbLogger.info(`Added extension ${extensionNumber} to queue ${queueId}`);
@@ -456,7 +457,7 @@ export class QueueRepository {
 
   async pauseMember(queueId: string, extensionNumber: string): Promise<boolean> {
     const result = await this.db.run(
-      'UPDATE queue_members SET paused = true WHERE queue_id = $1 AND extension_number = $2',
+      'UPDATE queue_members SET paused = 1 WHERE queue_id = $1 AND extension_number = $2',
       [queueId, extensionNumber]
     );
 
@@ -469,7 +470,7 @@ export class QueueRepository {
 
   async unpauseMember(queueId: string, extensionNumber: string): Promise<boolean> {
     const result = await this.db.run(
-      'UPDATE queue_members SET paused = false WHERE queue_id = $1 AND extension_number = $2',
+      'UPDATE queue_members SET paused = 0 WHERE queue_id = $1 AND extension_number = $2',
       [queueId, extensionNumber]
     );
 
@@ -501,10 +502,11 @@ export class QueueRepository {
       // Add new members
       for (const member of members) {
         const id = uuidv4();
+        const memberCreatedAt = Math.floor(Date.now() / 1000);
         await this.db.run(
           `INSERT INTO queue_members (id, queue_id, extension_number, penalty, paused, created_at)
-           VALUES ($1, $2, $3, $4, false, NOW())`,
-          [id, queueId, member.extensionNumber, member.penalty]
+           VALUES ($1, $2, $3, $4, 0, $5)`,
+          [id, queueId, member.extensionNumber, member.penalty, memberCreatedAt]
         );
       }
     });

@@ -22,7 +22,7 @@ export class SettingsRepository {
   async set(key: string, value: string): Promise<void> {
     await this.db.run(
       `INSERT INTO settings (key, value, updated_at)
-       VALUES ($1, $2, NOW())
+       VALUES ($1, $2, EXTRACT(EPOCH FROM NOW())::INTEGER)
        ON CONFLICT(key) DO UPDATE SET value = EXCLUDED.value, updated_at = EXCLUDED.updated_at`,
       [key, value]
     );
@@ -162,7 +162,7 @@ export class SettingsRepository {
   async addAdmin(telegramId: number, username?: string, role: 'admin' | 'viewer' = 'admin'): Promise<void> {
     await this.db.run(
       `INSERT INTO admin_users (telegram_id, username, role, created_at)
-       VALUES ($1, $2, $3, NOW())
+       VALUES ($1, $2, $3, EXTRACT(EPOCH FROM NOW())::INTEGER)
        ON CONFLICT(telegram_id) DO UPDATE SET username = EXCLUDED.username, role = EXCLUDED.role`,
       [telegramId, username || null, role]
     );

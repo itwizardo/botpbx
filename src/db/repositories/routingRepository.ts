@@ -37,8 +37,8 @@ export class RoutingRepository {
 
     await this.db.run(
       `INSERT INTO routing_rules (id, did, target_type, target_id, enabled, tenant_id, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
-      [id, rule.did, rule.targetType, rule.targetId, rule.enabled, tenantId]
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [id, rule.did, rule.targetType, rule.targetId, rule.enabled ? 1 : 0, tenantId, createdAt]
     );
 
     dbLogger.info(`Routing rule created: ${rule.did} -> ${rule.targetType}:${rule.targetId} for tenant ${tenantId}`);

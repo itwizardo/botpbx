@@ -76,7 +76,7 @@ export class RingGroupRepository {
 
     await this.db.run(
       `INSERT INTO ring_groups (id, name, strategy, ring_time, failover_destination, failover_type, enabled, tenant_id, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
       [
         id,
         ringGroup.name,
@@ -84,8 +84,9 @@ export class RingGroupRepository {
         ringGroup.ringTime,
         ringGroup.failoverDestination,
         ringGroup.failoverType,
-        ringGroup.enabled,
+        ringGroup.enabled ? 1 : 0,
         tenantId,
+        createdAt,
       ]
     );
 
@@ -186,7 +187,7 @@ export class RingGroupRepository {
     }
     if (updates.enabled !== undefined) {
       fields.push(`enabled = $${paramIndex++}`);
-      values.push(updates.enabled);
+      values.push(updates.enabled ? 1 : 0);
     }
 
     if (fields.length > 0) {

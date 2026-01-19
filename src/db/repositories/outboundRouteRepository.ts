@@ -202,10 +202,11 @@ export class OutboundRouteRepository {
     enabled?: boolean;
   }): Promise<OutboundRoute> {
     const id = uuidv4();
+    const createdAt = Math.floor(Date.now() / 1000);
 
     await this.db.run(`
       INSERT INTO outbound_routes (id, name, pattern, trunk_id, priority, prefix_to_add, prefix_to_strip, caller_id, enabled, created_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
     `, [
       id,
       data.name,
@@ -215,7 +216,8 @@ export class OutboundRouteRepository {
       data.prefixToAdd ?? null,
       data.prefixToStrip ?? 0,
       data.callerId ?? null,
-      data.enabled !== false,
+      data.enabled !== false ? 1 : 0,
+      createdAt,
     ]);
 
     const result = await this.findById(id);
@@ -269,7 +271,7 @@ export class OutboundRouteRepository {
     }
     if (data.enabled !== undefined) {
       updates.push(`enabled = $${paramIndex++}`);
-      values.push(data.enabled);
+      values.push(data.enabled ? 1 : 0);
     }
 
     if (updates.length === 0) return route;

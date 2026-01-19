@@ -61,7 +61,7 @@ export class TrunkRepository {
 
     await this.db.run(
       `INSERT INTO sip_trunks (id, name, host, port, username, password, auth_username, from_user, from_domain, context, codecs, enabled, register, stir_shaken_enabled, stir_shaken_attest, stir_shaken_profile, created_at, tenant_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW(), $17)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
       [
         id,
         trunk.name,
@@ -74,11 +74,12 @@ export class TrunkRepository {
         trunk.fromDomain,
         trunk.context,
         trunk.codecs,
-        trunk.enabled,
-        trunk.register,
-        trunk.stirShakenEnabled || false,
+        trunk.enabled ? 1 : 0,
+        trunk.register ? 1 : 0,
+        trunk.stirShakenEnabled ? 1 : 0,
         trunk.stirShakenAttest,
         trunk.stirShakenProfile,
+        createdAt,
         tenantId,
       ]
     );
@@ -202,15 +203,15 @@ export class TrunkRepository {
     }
     if (updates.enabled !== undefined) {
       fields.push(`enabled = $${paramIndex++}`);
-      values.push(updates.enabled);
+      values.push(updates.enabled ? 1 : 0);
     }
     if (updates.register !== undefined) {
       fields.push(`register = $${paramIndex++}`);
-      values.push(updates.register);
+      values.push(updates.register ? 1 : 0);
     }
     if (updates.stirShakenEnabled !== undefined) {
       fields.push(`stir_shaken_enabled = $${paramIndex++}`);
-      values.push(updates.stirShakenEnabled);
+      values.push(updates.stirShakenEnabled ? 1 : 0);
     }
     if (updates.stirShakenAttest !== undefined) {
       fields.push(`stir_shaken_attest = $${paramIndex++}`);

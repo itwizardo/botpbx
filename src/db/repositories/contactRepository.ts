@@ -80,7 +80,7 @@ export class ContactRepository {
 
     await this.db.run(
       `INSERT INTO contacts (id, phone_number, name, email, company, notes, tags, status, tenant_id, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [
         id,
         contact.phoneNumber,
@@ -91,6 +91,8 @@ export class ContactRepository {
         contact.tags,
         contact.status,
         tenantId,
+        now,
+        now,
       ]
     );
 
