@@ -42,7 +42,7 @@ BotPBX is a **complete phone system** built on Asterisk with a modern web interf
 - A hybrid of all three
 
 ```bash
-curl -sSL https://botpbx.com/install.sh | sh
+curl -sSL https://botpbx.com/install.sh | bash
 ```
 
 <p align="center">
