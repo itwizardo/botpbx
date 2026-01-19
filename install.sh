@@ -1298,6 +1298,30 @@ pm2 startup systemd -u root --hp /root > /dev/null 2>&1 || true
 cd "$BOTPBX_DIR"
 
 # ============================================
+# Setup Auto-Update Cron Job
+# ============================================
+log "  Setting up auto-update..."
+
+# Make update scripts executable
+chmod +x "$BOTPBX_DIR/scripts/update-check.sh" 2>/dev/null || true
+chmod +x "$BOTPBX_DIR/scripts/botpbx-update.sh" 2>/dev/null || true
+
+# Create cron job for hourly update checks
+cat > /etc/cron.d/botpbx-update << 'CRON'
+# BotPBX Auto-Update - Checks for new releases every hour
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+0 * * * * root /opt/botpbx/scripts/update-check.sh >> /var/log/botpbx-update.log 2>&1
+CRON
+chmod 644 /etc/cron.d/botpbx-update
+
+# Create log file with proper permissions
+touch /var/log/botpbx-update.log
+chmod 644 /var/log/botpbx-update.log
+
+log "  ✓ Auto-update configured (checks hourly)"
+
+# ============================================
 # Step 15: Wait for Services & Reload Asterisk
 # ============================================
 echo ""
