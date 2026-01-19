@@ -937,6 +937,24 @@ export const teamsApi = {
 // System API
 // ============================================
 
+export interface UpdateCheckResponse {
+  currentVersion: string;
+  latestVersion: string;
+  hasUpdate: boolean;
+  releaseUrl: string;
+  releaseNotes: string | null;
+  publishedAt: string | null;
+}
+
+export interface UpdateTriggerResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface AutoUpdateResponse {
+  enabled: boolean;
+}
+
 export const systemApi = {
   status: async (): Promise<SystemStatusResponse> => {
     return apiFetch('/api/v1/system/status');
@@ -948,6 +966,25 @@ export const systemApi = {
 
   auditLogs: async (page = 1, pageSize = 50): Promise<AuditLogsResponse> => {
     return apiFetch(`/api/v1/system/audit?page=${page}&pageSize=${pageSize}`);
+  },
+
+  checkUpdates: async (): Promise<UpdateCheckResponse> => {
+    return apiFetch('/api/v1/system/updates/check');
+  },
+
+  triggerUpdate: async (): Promise<UpdateTriggerResponse> => {
+    return apiFetch('/api/v1/system/updates/trigger', { method: 'POST' });
+  },
+
+  getAutoUpdate: async (): Promise<AutoUpdateResponse> => {
+    return apiFetch('/api/v1/system/updates/auto-update');
+  },
+
+  setAutoUpdate: async (enabled: boolean): Promise<AutoUpdateResponse> => {
+    return apiFetch('/api/v1/system/updates/auto-update', {
+      method: 'PUT',
+      body: JSON.stringify({ enabled }),
+    });
   },
 };
 

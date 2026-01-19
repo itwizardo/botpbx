@@ -13,6 +13,15 @@ export interface RecentSearchItem {
   timestamp: number;
 }
 
+export interface UpdateInfo {
+  currentVersion: string;
+  latestVersion: string;
+  hasUpdate: boolean;
+  releaseUrl: string;
+  releaseNotes: string | null;
+  publishedAt: string | null;
+}
+
 interface UIState {
   // Sidebar
   sidebarCollapsed: boolean;
@@ -30,6 +39,12 @@ interface UIState {
   // Notifications
   notificationCount: number;
 
+  // Updates
+  updateInfo: UpdateInfo | null;
+  updateDialogOpen: boolean;
+  autoUpdateEnabled: boolean;
+  updateChecking: boolean;
+
   // Actions
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
@@ -42,6 +57,10 @@ interface UIState {
   clearNotifications: () => void;
   addRecentSearch: (item: Omit<RecentSearchItem, 'timestamp'>) => void;
   clearRecentSearches: () => void;
+  setUpdateInfo: (info: UpdateInfo | null) => void;
+  setUpdateDialogOpen: (open: boolean) => void;
+  setAutoUpdateEnabled: (enabled: boolean) => void;
+  setUpdateChecking: (checking: boolean) => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -54,6 +73,10 @@ export const useUIStore = create<UIState>()(
       commandMenuOpen: false,
       recentSearches: [],
       notificationCount: 0,
+      updateInfo: null,
+      updateDialogOpen: false,
+      autoUpdateEnabled: true,
+      updateChecking: false,
 
       // Actions
       toggleSidebar: () => {
@@ -121,6 +144,22 @@ export const useUIStore = create<UIState>()(
 
       clearRecentSearches: () => {
         set({ recentSearches: [] });
+      },
+
+      setUpdateInfo: (info) => {
+        set({ updateInfo: info });
+      },
+
+      setUpdateDialogOpen: (open) => {
+        set({ updateDialogOpen: open });
+      },
+
+      setAutoUpdateEnabled: (enabled) => {
+        set({ autoUpdateEnabled: enabled });
+      },
+
+      setUpdateChecking: (checking) => {
+        set({ updateChecking: checking });
       },
     }),
     {

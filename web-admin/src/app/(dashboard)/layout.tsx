@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { PhoneProvider } from '@/contexts/phone-context';
 import { DialDialog, ActiveCall } from '@/components/phone';
 import { ForcePasswordChangeDialog } from '@/components/auth/force-password-change-dialog';
+import { UpdateDialog } from '@/components/system/update-dialog';
 
 export default function DashboardLayout({
   children,
@@ -87,6 +88,9 @@ export default function DashboardLayout({
 
         {/* Force Password Change Dialog */}
         <ForcePasswordChangeDialog />
+
+        {/* Update Dialog */}
+        <UpdateDialog />
       </div>
     </PhoneProvider>
   );

@@ -1,11 +1,17 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import * as os from 'os';
-import { exec } from 'child_process';
+import * as fs from 'fs';
+import * as path from 'path';
+import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 import { ApiContext } from '../server';
 import { apiLogger } from '../../utils/logger';
 
 const execAsync = promisify(exec);
+const readFileAsync = promisify(fs.readFile);
+
+const GITHUB_REPO = 'itwizardo/botpbx';
+const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
 
 export function registerSystemRoutes(server: FastifyInstance, ctx: ApiContext): void {
   // System status
@@ -231,6 +237,161 @@ export function registerSystemRoutes(server: FastifyInstance, ctx: ApiContext): 
       count: users.length,
     };
   });
+
+  // Check for available updates
+  server.get('/updates/check', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      // Get current version from package.json
+      const packageJsonPath = path.join(process.cwd(), 'package.json');
+      const packageJson = JSON.parse(await readFileAsync(packageJsonPath, 'utf8'));
+      const currentVersion = packageJson.version;
+
+      // Fetch latest release from GitHub
+      const response = await fetch(GITHUB_API_URL, {
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'BotPBX-Update-Checker'
+        }
+      });
+
+      if (!response.ok) {
+        // No releases yet or API error - check for new commits instead
+        if (response.status === 404) {
+          return {
+            currentVersion,
+            latestVersion: currentVersion,
+            hasUpdate: false,
+            releaseUrl: `https://github.com/${GITHUB_REPO}`,
+            releaseNotes: null,
+            publishedAt: null,
+          };
+        }
+        throw new Error(`GitHub API error: ${response.status}`);
+      }
+
+      const release = await response.json();
+      const latestVersion = release.tag_name?.replace(/^v/, '') || currentVersion;
+      const hasUpdate = latestVersion !== currentVersion && compareVersions(latestVersion, currentVersion) > 0;
+
+      return {
+        currentVersion,
+        latestVersion,
+        hasUpdate,
+        releaseUrl: release.html_url || `https://github.com/${GITHUB_REPO}/releases`,
+        releaseNotes: release.body || null,
+        publishedAt: release.published_at || null,
+      };
+    } catch (error) {
+      apiLogger.error('Failed to check for updates:', error);
+      return reply.status(500).send({
+        error: 'Server Error',
+        message: 'Failed to check for updates',
+      });
+    }
+  });
+
+  // Trigger update (admin only)
+  server.post('/updates/trigger', async (request: FastifyRequest, reply: FastifyReply) => {
+    if (request.user?.role !== 'admin') {
+      return reply.status(403).send({ error: 'Forbidden', message: 'Admin access required' });
+    }
+
+    try {
+      const updateScript = '/opt/botpbx/scripts/botpbx-update.sh';
+
+      // Check if update script exists
+      if (!fs.existsSync(updateScript)) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'Update script not found. Manual update may be required.',
+        });
+      }
+
+      // Spawn update script in background (don't wait for completion)
+      const updateProcess = spawn('sudo', [updateScript], {
+        detached: true,
+        stdio: 'ignore',
+      });
+      updateProcess.unref();
+
+      apiLogger.info('Update triggered by user:', request.user?.username);
+
+      return {
+        success: true,
+        message: 'Update process started. The service will restart automatically.',
+      };
+    } catch (error) {
+      apiLogger.error('Failed to trigger update:', error);
+      return reply.status(500).send({
+        error: 'Server Error',
+        message: 'Failed to trigger update',
+      });
+    }
+  });
+
+  // Get auto-update setting
+  server.get('/updates/auto-update', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const setting = await ctx.settingsRepo.get('auto_update_enabled');
+      return {
+        enabled: setting !== 'false', // Default to true
+      };
+    } catch (error) {
+      return { enabled: true }; // Default to true
+    }
+  });
+
+  // Set auto-update setting (admin only)
+  server.put('/updates/auto-update', async (request: FastifyRequest, reply: FastifyReply) => {
+    if (request.user?.role !== 'admin') {
+      return reply.status(403).send({ error: 'Forbidden', message: 'Admin access required' });
+    }
+
+    const { enabled } = request.body as { enabled: boolean };
+
+    try {
+      await ctx.settingsRepo.set('auto_update_enabled', enabled ? 'true' : 'false');
+
+      // Also update the .env file if it exists
+      const envPath = path.join(process.cwd(), '.env');
+      if (fs.existsSync(envPath)) {
+        let envContent = await readFileAsync(envPath, 'utf8');
+        if (envContent.includes('AUTO_UPDATE_ENABLED=')) {
+          envContent = envContent.replace(/AUTO_UPDATE_ENABLED=.*/g, `AUTO_UPDATE_ENABLED=${enabled}`);
+        } else {
+          envContent += `\nAUTO_UPDATE_ENABLED=${enabled}`;
+        }
+        fs.writeFileSync(envPath, envContent);
+      }
+
+      apiLogger.info(`Auto-update ${enabled ? 'enabled' : 'disabled'} by user:`, request.user?.username);
+
+      return {
+        success: true,
+        enabled,
+      };
+    } catch (error) {
+      apiLogger.error('Failed to update auto-update setting:', error);
+      return reply.status(500).send({
+        error: 'Server Error',
+        message: 'Failed to update auto-update setting',
+      });
+    }
+  });
+}
+
+// Compare semantic versions, returns: -1 if a < b, 0 if a == b, 1 if a > b
+function compareVersions(a: string, b: string): number {
+  const partsA = a.split('.').map(Number);
+  const partsB = b.split('.').map(Number);
+
+  for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+    const numA = partsA[i] || 0;
+    const numB = partsB[i] || 0;
+    if (numA > numB) return 1;
+    if (numA < numB) return -1;
+  }
+  return 0;
 }
 
 function formatUptime(seconds: number): string {

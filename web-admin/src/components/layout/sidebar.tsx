@@ -1,8 +1,10 @@
 'use client';
 
+import { useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useMutation } from '@tanstack/react-query';
 import {
   LayoutDashboard,
   Phone,
@@ -25,6 +27,8 @@ import {
   Voicemail,
   MessageSquare,
   FolderOpen,
+  Download,
+  RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/stores/ui-store';
@@ -38,6 +42,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { systemApi } from '@/lib/api';
 
 interface NavItem {
   title: string;
@@ -141,8 +146,35 @@ function NavLink({
 }
 
 export function Sidebar() {
-  const { sidebarCollapsed, toggleSidebar } = useUIStore();
-  const { hasPermission } = useAuthStore();
+  const {
+    sidebarCollapsed,
+    toggleSidebar,
+    updateInfo,
+    setUpdateInfo,
+    setUpdateDialogOpen,
+    updateChecking,
+    setUpdateChecking
+  } = useUIStore();
+  const { hasPermission, user } = useAuthStore();
+
+  // Check for updates on mount (for admins only)
+  const { mutate: checkForUpdates } = useMutation({
+    mutationFn: systemApi.checkUpdates,
+    onSuccess: (data) => {
+      setUpdateInfo(data);
+      setUpdateChecking(false);
+    },
+    onError: () => {
+      setUpdateChecking(false);
+    },
+  });
+
+  useEffect(() => {
+    // Only check for updates if user is admin
+    if (user?.role === 'admin' && !updateInfo) {
+      checkForUpdates();
+    }
+  }, [user?.role]);
 
   // Filter nav items based on user permissions
   const filteredMainNav = mainNavItems.filter(
@@ -151,6 +183,15 @@ export function Sidebar() {
   const filteredBottomNav = bottomNavItems.filter(
     (item) => !item.permission || hasPermission(item.permission)
   );
+
+  const handleUpdateClick = () => {
+    if (updateInfo?.hasUpdate) {
+      setUpdateDialogOpen(true);
+    } else {
+      setUpdateChecking(true);
+      checkForUpdates();
+    }
+  };
 
   return (
     <TooltipProvider>
@@ -209,6 +250,68 @@ export function Sidebar() {
                 <NavLink key={item.href} item={item} collapsed={sidebarCollapsed} />
               ))}
             </nav>
+
+            {/* Update Indicator (Admin only) */}
+            {user?.role === 'admin' && (
+              <>
+                <Separator className="my-4" />
+                {sidebarCollapsed ? (
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleUpdateClick}
+                        className={cn(
+                          'w-full justify-center relative',
+                          updateInfo?.hasUpdate && 'text-primary'
+                        )}
+                        disabled={updateChecking}
+                      >
+                        {updateChecking ? (
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Download className="h-4 w-4" />
+                        )}
+                        {updateInfo?.hasUpdate && (
+                          <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-success animate-pulse" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      {updateInfo?.hasUpdate
+                        ? `Update Available: v${updateInfo.latestVersion}`
+                        : `Version ${updateInfo?.currentVersion || '...'}`}
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleUpdateClick}
+                    className={cn(
+                      'w-full justify-start relative',
+                      updateInfo?.hasUpdate && 'text-primary'
+                    )}
+                    disabled={updateChecking}
+                  >
+                    {updateChecking ? (
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4 mr-2" />
+                    )}
+                    <span className="flex-1 text-left">
+                      {updateInfo?.hasUpdate
+                        ? 'Update Available'
+                        : `v${updateInfo?.currentVersion || '...'}`}
+                    </span>
+                    {updateInfo?.hasUpdate && (
+                      <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
+                    )}
+                  </Button>
+                )}
+              </>
+            )}
 
             <Separator className="my-4" />
 
