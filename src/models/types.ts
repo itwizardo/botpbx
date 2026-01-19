@@ -119,7 +119,6 @@ export interface AppConfig {
   initialAdminId: number | null;
   elevenLabsApiKey: string | null;
   elevenLabsDefaultVoice: string;
-  databasePath: string;
   audioFilesPath: string;
   asteriskConfigPath: string;
 }

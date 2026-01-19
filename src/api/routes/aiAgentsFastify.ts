@@ -120,7 +120,7 @@ function transformAgent(agent: AIAgent) {
     llmProvider: agent.llm_provider,
     llmModel: agent.llm_model,
     enabledFunctions: agent.enabled_functions ? JSON.parse(agent.enabled_functions) : [],
-    enabled: Boolean(agent.enabled),  // Works with both PostgreSQL boolean and SQLite integer
+    enabled: Boolean(agent.enabled),  // Convert integer (0/1) to boolean
     flowEnabled: agent.flow_enabled || 0,
     flowData,
     createdAt: agent.created_at,

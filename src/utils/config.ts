@@ -65,7 +65,6 @@ function loadConfig(): AppConfig {
     elevenLabsDefaultVoice: getEnvVar('ELEVENLABS_DEFAULT_VOICE', '21m00Tcm4TlvDq8ikWAM'),
 
     // Storage Paths
-    databasePath: getEnvVar('DATABASE_PATH', './data/database.sqlite'),
     audioFilesPath: getEnvVar('AUDIO_FILES_PATH', '/var/lib/asterisk/sounds/botpbx'),
     asteriskConfigPath: getEnvVar('ASTERISK_CONFIG_PATH', '/etc/asterisk'),
   };
@@ -77,7 +76,6 @@ function loadConfig(): AppConfig {
 function resolvePaths(config: AppConfig): AppConfig {
   return {
     ...config,
-    databasePath: path.resolve(config.databasePath),
     audioFilesPath: path.resolve(config.audioFilesPath),
   };
 }
