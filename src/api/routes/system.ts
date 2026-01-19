@@ -13,6 +13,13 @@ const readFileAsync = promisify(fs.readFile);
 const GITHUB_REPO = 'itwizardo/botpbx';
 const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
 
+interface GitHubRelease {
+  tag_name?: string;
+  html_url?: string;
+  body?: string;
+  published_at?: string;
+}
+
 export function registerSystemRoutes(server: FastifyInstance, ctx: ApiContext): void {
   // System status
   server.get('/status', async (request: FastifyRequest, reply: FastifyReply) => {
@@ -269,7 +276,7 @@ export function registerSystemRoutes(server: FastifyInstance, ctx: ApiContext): 
         throw new Error(`GitHub API error: ${response.status}`);
       }
 
-      const release = await response.json();
+      const release = await response.json() as GitHubRelease;
       const latestVersion = release.tag_name?.replace(/^v/, '') || currentVersion;
       const hasUpdate = latestVersion !== currentVersion && compareVersions(latestVersion, currentVersion) > 0;
 
