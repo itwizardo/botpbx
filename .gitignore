@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+web-admin/node_modules/
+
+# Build output
+dist/
+web-admin/.next/
+web-admin/out/
+
+# Environment files with secrets
+.env
+.env.local
+.env.production
+credentials.txt
+
+# Backup files
+*.bak
+*.backup
+
+# Weird postgresql directory
+postgresql:*
+
+# Audio files (generated)
+audio/
+*.wav
+*.mp3
+
+# Logs
+logs/
+*.log
+
+# Data
+data/
+*.sqlite
+*.db
+
+# TTS Models (too large for git)
+kokoro-venv/
+scripts/kokoro-v1.0.onnx
+scripts/voices-v1.0.bin
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# PM2
+.pm2/
+
+# Claude
+.claude/
+
+# Temporary
+tmp/
+temp/
+*.tmp
