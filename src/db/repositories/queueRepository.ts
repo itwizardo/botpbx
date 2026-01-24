@@ -60,7 +60,7 @@ interface QueueRow {
   announce_frequency: number;
   announce_position: number;
   // Dynamic TTS position announcements
-  position_announce_enabled: number;  // Integer boolean (0/1)
+  position_announce_enabled: boolean;
   position_announce_voice: string | null;
   position_announce_provider: string;
   position_announce_language: string;

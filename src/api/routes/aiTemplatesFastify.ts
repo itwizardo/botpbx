@@ -17,7 +17,7 @@ interface AIAgentTemplate {
   voice: string;
   enabled_functions: string;
   icon: string | null;
-  is_default: number;
+  is_default: boolean;
   created_at: number;
 }
 

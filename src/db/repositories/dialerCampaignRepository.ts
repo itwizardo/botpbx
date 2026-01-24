@@ -29,7 +29,7 @@ interface CampaignRow {
   press1_count: number;
   connected_count: number;
   answering_machine_count: number;
-  amd_enabled: number | boolean;
+  amd_enabled: boolean;
   tenant_id: string;
   created_at: Date | string | number;
   started_at: Date | string | number | null;

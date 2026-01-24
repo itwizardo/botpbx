@@ -19,9 +19,9 @@ interface AIAgent {
   llm_model: string;
   stt_provider: string;
   enabled_functions: string | null;
-  enabled: number;
-  use_realtime: number;
-  flow_enabled: number;
+  enabled: boolean;
+  use_realtime: boolean;
+  flow_enabled: boolean;
   flow_data: string | null;
   created_at: number;
   // ElevenLabs specific fields
@@ -365,7 +365,7 @@ export function registerAIAgentRoutes(server: FastifyInstance, ctx: ApiContext) 
   server.get('/agents/:id/flow', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
     try {
       const { id } = request.params;
-      const agent = await ctx.db.get<{ flow_enabled: number; flow_data: string | null }>(
+      const agent = await ctx.db.get<{ flow_enabled: boolean; flow_data: string | null }>(
         'SELECT flow_enabled, flow_data FROM ai_agents WHERE id = $1',
         [id]
       );
@@ -642,7 +642,7 @@ export function registerAIAgentRoutes(server: FastifyInstance, ctx: ApiContext) 
         voice_provider: string;
         voice_id: string;
         language: string;
-        flow_enabled: number;
+        flow_enabled: boolean;
         flow_data: string | null;
         elevenlabs_voice_id: string | null;
         elevenlabs_model: string | null;

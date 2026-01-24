@@ -37,7 +37,7 @@ interface ContactGroupRow {
   id: string;
   name: string;
   description: string | null;
-  allow_redial: number;
+  allow_redial: boolean;
   created_at: number;
 }
 

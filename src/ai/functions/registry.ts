@@ -99,7 +99,7 @@ export async function loadFunctionsFromDatabase(): Promise<void> {
       parameters: string;
       handler_type: 'builtin' | 'webhook';
       handler_config: string | null;
-      enabled: number;
+      enabled: boolean;
     }>('SELECT * FROM ai_functions WHERE enabled = true');
 
     for (const dbFn of dbFunctions) {

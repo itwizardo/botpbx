@@ -10,11 +10,11 @@ interface ExtensionRow {
   enabled: boolean;
   tenant_id: string;
   forward_number: string | null;
-  forward_enabled: number | null;
+  forward_enabled: boolean | null;
   forward_destination: string | null;
   forward_type: string | null;
   forward_timeout: number | null;
-  dnd_enabled: number | null;
+  dnd_enabled: boolean | null;
   created_at: Date | string;
 }
 
