@@ -513,7 +513,7 @@ export class AIInsightsService extends EventEmitter {
    */
   async scoreAllAgents(): Promise<AgentScore[]> {
     const agents = await this.db.all<{ id: string }>(
-      'SELECT id FROM ai_agents WHERE enabled = 1'
+      'SELECT id FROM ai_agents WHERE enabled = true'
     );
 
     const scores: AgentScore[] = [];

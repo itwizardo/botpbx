@@ -261,7 +261,7 @@ export class QueueRepository {
    * @param tenantId Tenant ID (optional)
    */
   async findAllEnabled(tenantId?: string): Promise<(Queue & { tenantId: string })[]> {
-    let query = 'SELECT * FROM queues WHERE enabled = 1';
+    let query = 'SELECT * FROM queues WHERE enabled = true';
     const params: unknown[] = [];
 
     if (tenantId) {
@@ -457,7 +457,7 @@ export class QueueRepository {
 
   async pauseMember(queueId: string, extensionNumber: string): Promise<boolean> {
     const result = await this.db.run(
-      'UPDATE queue_members SET paused = 1 WHERE queue_id = $1 AND extension_number = $2',
+      'UPDATE queue_members SET paused = true WHERE queue_id = $1 AND extension_number = $2',
       [queueId, extensionNumber]
     );
 
@@ -470,7 +470,7 @@ export class QueueRepository {
 
   async unpauseMember(queueId: string, extensionNumber: string): Promise<boolean> {
     const result = await this.db.run(
-      'UPDATE queue_members SET paused = 0 WHERE queue_id = $1 AND extension_number = $2',
+      'UPDATE queue_members SET paused = false WHERE queue_id = $1 AND extension_number = $2',
       [queueId, extensionNumber]
     );
 

@@ -105,7 +105,7 @@ export class WebUserRepository {
         data.passwordHash,
         data.role || 'viewer',
         data.displayName || null,
-        data.mustChangePassword ? 1 : 0,
+        data.mustChangePassword ?? false,
       ]
     );
 
@@ -141,7 +141,7 @@ export class WebUserRepository {
 
   async findEnabled(): Promise<WebUserPublic[]> {
     const rows = await this.db.all<WebUserRow>(
-      'SELECT * FROM web_users WHERE enabled = 1 ORDER BY created_at DESC'
+      'SELECT * FROM web_users WHERE enabled = true ORDER BY created_at DESC'
     );
     return rows.map(rowToWebUser).map(toPublic);
   }
@@ -201,11 +201,11 @@ export class WebUserRepository {
     }
     if (updates.enabled !== undefined) {
       fields.push(`enabled = $${paramIndex++}`);
-      values.push(updates.enabled ? 1 : 0);
+      values.push(!!updates.enabled);
     }
     if (updates.mustChangePassword !== undefined) {
       fields.push(`must_change_password = $${paramIndex++}`);
-      values.push(updates.mustChangePassword ? 1 : 0);
+      values.push(!!updates.mustChangePassword);
     }
 
     if (fields.length === 0) return false;
@@ -221,7 +221,7 @@ export class WebUserRepository {
 
   async clearMustChangePassword(id: number): Promise<boolean> {
     const result = await this.db.run(
-      'UPDATE web_users SET must_change_password = 0 WHERE id = $1',
+      'UPDATE web_users SET must_change_password = false WHERE id = $1',
       [id]
     );
     return result.rowCount > 0;

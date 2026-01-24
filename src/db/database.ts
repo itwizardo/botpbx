@@ -200,11 +200,7 @@ export class DatabaseManager {
    */
   private convertParams(params: unknown[]): unknown[] {
     return params.map(p => {
-      // PostgreSQL handles booleans natively, but convert numbers to bool if needed
-      if (typeof p === 'number' && (p === 0 || p === 1)) {
-        // Keep as number - PostgreSQL can handle 0/1 for boolean columns
-        return p;
-      }
+      // PostgreSQL uses native booleans - no conversion needed
       return p;
     });
   }

@@ -64,7 +64,7 @@ export class OutboundRouteRepository {
       SELECT r.*, t.name as trunk_name
       FROM outbound_routes r
       LEFT JOIN sip_trunks t ON r.trunk_id = t.id
-      WHERE r.enabled = 1
+      WHERE r.enabled = true
       ORDER BY r.priority ASC
     `);
     return rows.map(row => this.mapRowToRoute(row));
@@ -216,7 +216,7 @@ export class OutboundRouteRepository {
       data.prefixToAdd ?? null,
       data.prefixToStrip ?? 0,
       data.callerId ?? null,
-      data.enabled !== false ? 1 : 0,
+      data.enabled !== false,
       createdAt,
     ]);
 
@@ -271,7 +271,7 @@ export class OutboundRouteRepository {
     }
     if (data.enabled !== undefined) {
       updates.push(`enabled = $${paramIndex++}`);
-      values.push(data.enabled ? 1 : 0);
+      values.push(!!data.enabled);
     }
 
     if (updates.length === 0) return route;

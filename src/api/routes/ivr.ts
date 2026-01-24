@@ -305,7 +305,7 @@ export function registerIvrRoutes(server: FastifyInstance, ctx: ApiContext): voi
         let trunk;
         if (trunkId) {
           trunk = await ctx.db.get<{ id: string; name: string; username: string; from_user: string | null }>(
-            'SELECT id, name, username, from_user FROM sip_trunks WHERE id = $1 AND enabled = 1',
+            'SELECT id, name, username, from_user FROM sip_trunks WHERE id = $1 AND enabled = true',
             [trunkId]
           );
           if (!trunk) {
@@ -316,7 +316,7 @@ export function registerIvrRoutes(server: FastifyInstance, ctx: ApiContext): voi
           }
         } else {
           trunk = await ctx.db.get<{ id: string; name: string; username: string; from_user: string | null }>(
-            'SELECT id, name, username, from_user FROM sip_trunks WHERE enabled = 1 LIMIT 1'
+            'SELECT id, name, username, from_user FROM sip_trunks WHERE enabled = true LIMIT 1'
           );
           if (!trunk) {
             return reply.status(503).send({

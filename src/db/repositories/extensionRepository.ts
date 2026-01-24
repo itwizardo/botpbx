@@ -119,7 +119,7 @@ export class ExtensionRepository {
    * @param tenantId Tenant ID (optional)
    */
   async findEnabled(tenantId?: string): Promise<(Extension & { tenantId: string })[]> {
-    let query = 'SELECT * FROM extensions WHERE enabled = 1';
+    let query = 'SELECT * FROM extensions WHERE enabled = true';
     const params: unknown[] = [];
 
     if (tenantId) {
@@ -350,7 +350,7 @@ export class ExtensionRepository {
    */
   async findAllForAsterisk(): Promise<(Extension & { tenantId: string })[]> {
     const rows = await this.db.all<ExtensionRow>(
-      'SELECT * FROM extensions WHERE enabled = 1 ORDER BY tenant_id, number'
+      'SELECT * FROM extensions WHERE enabled = true ORDER BY tenant_id, number'
     );
     return rows.map(rowToExtension);
   }

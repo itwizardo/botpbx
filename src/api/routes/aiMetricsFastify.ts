@@ -74,7 +74,7 @@ export function registerAIMetricsRoutes(server: FastifyInstance, ctx: ApiContext
             WHEN sentiment = 'neutral' THEN 0.5
             ELSE 0.0
           END) as avg_sentiment,
-          AVG(CASE WHEN transferred = 1 THEN 1.0 ELSE 0.0 END) as avg_transfer_rate
+          AVG(CASE WHEN transferred = true THEN 1.0 ELSE 0.0 END) as avg_transfer_rate
         FROM ai_call_analytics
         WHERE created_at >= $1
       `, [startDateStr]);

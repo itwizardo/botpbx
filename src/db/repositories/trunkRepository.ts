@@ -74,9 +74,9 @@ export class TrunkRepository {
         trunk.fromDomain,
         trunk.context,
         trunk.codecs,
-        trunk.enabled ? 1 : 0,
-        trunk.register ? 1 : 0,
-        trunk.stirShakenEnabled ? 1 : 0,
+        trunk.enabled ?? true,
+        trunk.register ?? false,
+        trunk.stirShakenEnabled ?? false,
         trunk.stirShakenAttest,
         trunk.stirShakenProfile,
         createdAt,
@@ -136,7 +136,7 @@ export class TrunkRepository {
    * @param tenantId Tenant ID (optional)
    */
   async findEnabled(tenantId?: string): Promise<(SIPTrunk & { tenantId: string })[]> {
-    let query = 'SELECT * FROM sip_trunks WHERE enabled = 1';
+    let query = 'SELECT * FROM sip_trunks WHERE enabled = true';
     const params: unknown[] = [];
 
     if (tenantId) {
@@ -203,15 +203,15 @@ export class TrunkRepository {
     }
     if (updates.enabled !== undefined) {
       fields.push(`enabled = $${paramIndex++}`);
-      values.push(updates.enabled ? 1 : 0);
+      values.push(!!updates.enabled);
     }
     if (updates.register !== undefined) {
       fields.push(`register = $${paramIndex++}`);
-      values.push(updates.register ? 1 : 0);
+      values.push(!!updates.register);
     }
     if (updates.stirShakenEnabled !== undefined) {
       fields.push(`stir_shaken_enabled = $${paramIndex++}`);
-      values.push(updates.stirShakenEnabled ? 1 : 0);
+      values.push(!!updates.stirShakenEnabled);
     }
     if (updates.stirShakenAttest !== undefined) {
       fields.push(`stir_shaken_attest = $${paramIndex++}`);
@@ -295,7 +295,7 @@ export class TrunkRepository {
    */
   async findAllForAsterisk(): Promise<(SIPTrunk & { tenantId: string })[]> {
     const rows = await this.db.all<TrunkRow>(
-      'SELECT * FROM sip_trunks WHERE enabled = 1 ORDER BY tenant_id, name'
+      'SELECT * FROM sip_trunks WHERE enabled = true ORDER BY tenant_id, name'
     );
     return rows.map(rowToTrunk);
   }

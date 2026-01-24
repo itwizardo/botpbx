@@ -145,7 +145,7 @@ export class RingGroupRepository {
    */
   async findAllForAsterisk(): Promise<(RingGroup & { tenantId: string })[]> {
     const rows = await this.db.all<RingGroupRow>(
-      'SELECT * FROM ring_groups WHERE enabled = 1 ORDER BY tenant_id, name'
+      'SELECT * FROM ring_groups WHERE enabled = true ORDER BY tenant_id, name'
     );
 
     const results: (RingGroup & { tenantId: string })[] = [];

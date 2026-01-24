@@ -87,7 +87,7 @@ export class CallSummaryRepository {
       input.actionItems ? JSON.stringify(input.actionItems) : null,
       input.sentiment || null,
       input.callerIntent || null,
-      input.followUpNeeded ? 1 : 0,
+      input.followUpNeeded ?? false,
       input.followUpNotes || null,
       input.generatedBy,
       input.modelUsed || null,
@@ -141,7 +141,7 @@ export class CallSummaryRepository {
   async findByFollowUpNeeded(limit = 50): Promise<CallSummary[]> {
     const rows = await this.db.all<CallSummaryRow>(`
       SELECT * FROM call_summaries
-      WHERE follow_up_needed = 1
+      WHERE follow_up_needed = true
       ORDER BY created_at DESC
       LIMIT $1
     `, [limit]);
@@ -170,7 +170,7 @@ export class CallSummaryRepository {
       UPDATE call_summaries
       SET follow_up_needed = $1, follow_up_notes = $2
       WHERE id = $3
-    `, [followUpNeeded ? 1 : 0, followUpNotes || null, id]);
+    `, [followUpNeeded, followUpNotes || null, id]);
     return result.rowCount > 0;
   }
 
@@ -211,7 +211,7 @@ export class CallSummaryRepository {
     }>(`
       SELECT
         COUNT(*) as total,
-        COUNT(*) FILTER (WHERE follow_up_needed = 1) as follow_up_needed,
+        COUNT(*) FILTER (WHERE follow_up_needed = true) as follow_up_needed,
         COUNT(*) FILTER (WHERE sentiment = 'positive') as positive,
         COUNT(*) FILTER (WHERE sentiment = 'neutral') as neutral,
         COUNT(*) FILTER (WHERE sentiment = 'negative') as negative,

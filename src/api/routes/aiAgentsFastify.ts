@@ -226,8 +226,8 @@ export function registerAIAgentRoutes(server: FastifyInstance, ctx: ApiContext) 
         actualLlmModel,
         sttProvider,
         JSON.stringify(enabledFunctions),
-        enabled ? 1 : 0,  // Convert boolean to INTEGER for PostgreSQL
-        1,  // Always use realtime mode (INTEGER)
+        enabled,  // PostgreSQL uses actual boolean
+        true,  // Always use realtime mode
         elevenLabsVoiceId || null,
         elevenLabsModel,
         createdAt
@@ -314,7 +314,7 @@ export function registerAIAgentRoutes(server: FastifyInstance, ctx: ApiContext) 
           if (key === 'enabledFunctions') {
             values.push(JSON.stringify((updates as Record<string, unknown>)[key]));
           } else if (key === 'enabled') {
-            values.push((updates as Record<string, unknown>)[key] ? 1 : 0);
+            values.push(!!(updates as Record<string, unknown>)[key]);
           } else {
             values.push((updates as Record<string, unknown>)[key]);
           }
@@ -455,7 +455,7 @@ export function registerAIAgentRoutes(server: FastifyInstance, ctx: ApiContext) 
       // Update flow_enabled
       await ctx.db.run(
         'UPDATE ai_agents SET flow_enabled = $1 WHERE id = $2',
-        [enabled ? 1 : 0, id]
+        [enabled, id]
       );
 
       // Return updated agent
@@ -652,7 +652,7 @@ export function registerAIAgentRoutes(server: FastifyInstance, ctx: ApiContext) 
         SELECT id, name, system_prompt, greeting_text, voice_provider, voice_id, language,
                flow_enabled, flow_data, elevenlabs_voice_id, elevenlabs_model,
                llm_provider, llm_model
-        FROM ai_agents WHERE id = $1 AND enabled = 1
+        FROM ai_agents WHERE id = $1 AND enabled = true
       `, [agentId]);
 
       if (!agent) {
@@ -693,7 +693,7 @@ export function registerAIAgentRoutes(server: FastifyInstance, ctx: ApiContext) 
       let trunk;
       if (trunkId) {
         trunk = await ctx.db.get<{ id: string; name: string; username: string; from_user: string | null }>(
-          'SELECT id, name, username, from_user FROM sip_trunks WHERE id = $1 AND enabled = 1',
+          'SELECT id, name, username, from_user FROM sip_trunks WHERE id = $1 AND enabled = true',
           [trunkId]
         );
         if (!trunk) {
@@ -705,7 +705,7 @@ export function registerAIAgentRoutes(server: FastifyInstance, ctx: ApiContext) 
         }
       } else {
         trunk = await ctx.db.get<{ id: string; name: string; username: string; from_user: string | null }>(
-          'SELECT id, name, username, from_user FROM sip_trunks WHERE enabled = 1 LIMIT 1'
+          'SELECT id, name, username, from_user FROM sip_trunks WHERE enabled = true LIMIT 1'
         );
         if (!trunk) {
           return reply.status(503).send({
@@ -820,7 +820,7 @@ export function registerAIAgentRoutes(server: FastifyInstance, ctx: ApiContext) 
       const trunkCounts = await ctx.db.get<{ total: string; enabled: string }>(`
         SELECT
           COUNT(*) as total,
-          COUNT(*) FILTER (WHERE enabled = 1) as enabled
+          COUNT(*) FILTER (WHERE enabled = true) as enabled
         FROM sip_trunks
       `);
 
@@ -828,7 +828,7 @@ export function registerAIAgentRoutes(server: FastifyInstance, ctx: ApiContext) 
       const agentCounts = await ctx.db.get<{ total: string; enabled: string }>(`
         SELECT
           COUNT(*) as total,
-          COUNT(*) FILTER (WHERE enabled = 1) as enabled
+          COUNT(*) FILTER (WHERE enabled = true) as enabled
         FROM ai_agents
       `);
 

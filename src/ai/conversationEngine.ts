@@ -831,7 +831,7 @@ export async function createConversationEngine(
     llm_model: string;
     stt_provider: string;
     enabled_functions: string | null;
-  }>('SELECT * FROM ai_agents WHERE id = $1 AND enabled = 1', [agentId]);
+  }>('SELECT * FROM ai_agents WHERE id = $1 AND enabled = true', [agentId]);
 
   if (!agent) {
     throw new Error(`AI agent not found: ${agentId}`);

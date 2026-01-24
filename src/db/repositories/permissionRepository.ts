@@ -195,13 +195,13 @@ export class PermissionRepository {
       // Update existing
       await this.db.run(
         'UPDATE user_permissions SET granted = $1 WHERE user_id = $2 AND permission = $3',
-        [granted ? 1 : 0, userId, permission]
+        [granted, userId, permission]
       );
     } else {
       // Insert new
       await this.db.run(
         'INSERT INTO user_permissions (user_id, permission, granted) VALUES ($1, $2, $3)',
-        [userId, permission, granted ? 1 : 0]
+        [userId, permission, granted]
       );
     }
 

@@ -257,7 +257,7 @@ export class CampaignContactRepository {
   async updateAmdStatus(id: string, amdStatus: string, detected: boolean): Promise<boolean> {
     const result = await this.db.run(
       'UPDATE campaign_contacts SET amd_detected = $1, amd_status = $2, status = $3 WHERE id = $4',
-      [detected ? 1 : 0, amdStatus, detected ? 'answering_machine' : 'answered', id]
+      [detected, amdStatus, detected ? 'answering_machine' : 'answered', id]
     );
     return result.rowCount > 0;
   }

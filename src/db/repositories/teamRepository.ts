@@ -305,7 +305,7 @@ export class TeamRepository {
       this.db.get<{ count: string }>('SELECT COUNT(*) as count FROM teams WHERE tenant_id = $1', [tenantId]),
       this.db.get<{ count: string }>('SELECT COUNT(*) as count FROM web_users'),
       this.db.get<{ count: string }>(
-        `SELECT COUNT(*) as count FROM web_users WHERE enabled = 1 AND last_login_at > NOW() - INTERVAL '24 hours'`
+        `SELECT COUNT(*) as count FROM web_users WHERE enabled = true AND last_login_at > NOW() - INTERVAL '24 hours'`
       ),
       this.db.all<{ role: string; count: string }>(
         `SELECT role, COUNT(*) as count FROM web_users GROUP BY role`

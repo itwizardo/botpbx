@@ -87,7 +87,7 @@ export class VoicemailRepository {
       input.durationSeconds || null,
       input.filePath,
       input.transcriptionId || null,
-      input.urgent ? 1 : 0,
+      input.urgent ?? false,
       input.msgId || null,
       input.origDate || null,
       input.origTime || null,
@@ -129,7 +129,7 @@ export class VoicemailRepository {
     const params: any[] = [mailbox];
 
     if (options?.unreadOnly) {
-      query += ' AND read = 0';
+      query += ' AND read = false';
     }
 
     query += ' ORDER BY created_at DESC';
@@ -160,7 +160,7 @@ export class VoicemailRepository {
   async findUnread(limit = 50): Promise<Voicemail[]> {
     const rows = await this.db.all<VoicemailRow>(`
       SELECT * FROM voicemails
-      WHERE read = 0
+      WHERE read = false
       ORDER BY created_at DESC
       LIMIT $1
     `, [limit]);
@@ -177,7 +177,7 @@ export class VoicemailRepository {
 
   async markAsRead(id: string): Promise<boolean> {
     const result = await this.db.run(
-      'UPDATE voicemails SET read = 1 WHERE id = $1',
+      'UPDATE voicemails SET read = true WHERE id = $1',
       [id]
     );
     return result.rowCount > 0;
@@ -185,7 +185,7 @@ export class VoicemailRepository {
 
   async markAsUnread(id: string): Promise<boolean> {
     const result = await this.db.run(
-      'UPDATE voicemails SET read = 0 WHERE id = $1',
+      'UPDATE voicemails SET read = false WHERE id = $1',
       [id]
     );
     return result.rowCount > 0;
@@ -193,7 +193,7 @@ export class VoicemailRepository {
 
   async markAsNotified(id: string): Promise<boolean> {
     const result = await this.db.run(
-      'UPDATE voicemails SET notified = 1 WHERE id = $1',
+      'UPDATE voicemails SET notified = true WHERE id = $1',
       [id]
     );
     return result.rowCount > 0;
@@ -234,7 +234,7 @@ export class VoicemailRepository {
     }
 
     if (unreadOnly) {
-      conditions.push('read = 0');
+      conditions.push('read = false');
     }
 
     if (conditions.length > 0) {
@@ -249,7 +249,7 @@ export class VoicemailRepository {
     const rows = await this.db.all<{ mailbox: string; count: string }>(`
       SELECT mailbox, COUNT(*) as count
       FROM voicemails
-      WHERE read = 0
+      WHERE read = false
       GROUP BY mailbox
     `);
 
@@ -274,8 +274,8 @@ export class VoicemailRepository {
     }>(`
       SELECT
         COUNT(*) as total,
-        COUNT(*) FILTER (WHERE read = 0) as unread,
-        COUNT(*) FILTER (WHERE read = 1) as read,
+        COUNT(*) FILTER (WHERE read = false) as unread,
+        COUNT(*) FILTER (WHERE read = true) as read,
         COUNT(*) FILTER (WHERE transcription_id IS NOT NULL) as transcribed
       FROM voicemails
     `);

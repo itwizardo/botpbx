@@ -65,7 +65,7 @@ function rowToContactGroup(row: ContactGroupRow): ContactGroup {
     id: row.id,
     name: row.name,
     description: row.description,
-    allowRedial: row.allow_redial === 1,
+    allowRedial: !!row.allow_redial,
     createdAt: row.created_at,
   };
 }
@@ -102,7 +102,7 @@ export class ContactGroupRepository {
     const id = uuidv4();
     await this.db.run(
       `INSERT INTO contact_groups (id, name, description, allow_redial) VALUES ($1, $2, $3, $4)`,
-      [id, data.name, data.description || null, data.allowRedial ? 1 : 0]
+      [id, data.name, data.description || null, data.allowRedial ?? false]
     );
     const group = await this.findGroupById(id);
     if (!group) throw new Error('Failed to create contact group');
@@ -158,7 +158,7 @@ export class ContactGroupRepository {
     }
     if (data.allowRedial !== undefined) {
       fields.push(`allow_redial = $${paramIndex++}`);
-      values.push(data.allowRedial ? 1 : 0);
+      values.push(!!data.allowRedial);
     }
 
     if (fields.length === 0) return false;
@@ -399,7 +399,7 @@ export class ContactGroupRepository {
     const result = await this.db.get<{ count: string }>(
       `SELECT COUNT(*) as count FROM contact_group_members cgm
        JOIN contact_groups cg ON cgm.group_id = cg.id
-       WHERE cgm.phone_number = $1 AND cg.allow_redial = 1`,
+       WHERE cgm.phone_number = $1 AND cg.allow_redial = true`,
       [normalizedPhone]
     );
     return result ? parseInt(result.count, 10) > 0 : false;

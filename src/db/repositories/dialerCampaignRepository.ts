@@ -71,7 +71,7 @@ function rowToCampaign(row: CampaignRow): DialerCampaign & { tenantId: string } 
     press1Count: row.press1_count,
     connectedCount: row.connected_count,
     answeringMachineCount: row.answering_machine_count || 0,
-    amdEnabled: row.amd_enabled === 1 || row.amd_enabled === true,
+    amdEnabled: !!row.amd_enabled,
     tenantId: row.tenant_id,
     createdAt: toTimestamp(row.created_at) || Math.floor(Date.now() / 1000),
     startedAt: toTimestamp(row.started_at),
@@ -111,7 +111,7 @@ export class DialerCampaignRepository {
         campaign.maxConcurrent || 10,
         campaign.retryAttempts || 3,
         campaign.retryDelayMinutes || 30,
-        campaign.amdEnabled !== false ? 1 : 0,
+        campaign.amdEnabled !== false,
         tenantId,
         createdAt,
       ]
@@ -331,7 +331,7 @@ export class DialerCampaignRepository {
     }
     if (updates.amdEnabled !== undefined) {
       fields.push(`amd_enabled = $${paramIndex++}`);
-      values.push(updates.amdEnabled ? 1 : 0);
+      values.push(!!updates.amdEnabled);
     }
 
     if (fields.length === 0) return false;

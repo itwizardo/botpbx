@@ -88,7 +88,7 @@ class TranscriptionService extends EventEmitter {
   async initialize(): Promise<void> {
     // Load preferred provider from config
     const config = await db.queryOne<{ stt_provider: string }>(
-      `SELECT config FROM provider_configs WHERE provider_type = 'stt' AND enabled = 1 ORDER BY id LIMIT 1`
+      `SELECT config FROM provider_configs WHERE provider_type = 'stt' AND enabled = true ORDER BY id LIMIT 1`
     );
 
     if (config) {

@@ -87,7 +87,7 @@ export class RoutingRepository {
    * Get enabled routing rule by DID
    */
   async findEnabledByDID(did: string, tenantId?: string): Promise<(RoutingRule & { tenantId: string }) | null> {
-    let query = 'SELECT * FROM routing_rules WHERE did = $1 AND enabled = 1';
+    let query = 'SELECT * FROM routing_rules WHERE did = $1 AND enabled = true';
     const params: unknown[] = [did];
 
     if (tenantId) {
@@ -122,7 +122,7 @@ export class RoutingRepository {
    */
   async findAllForAsterisk(): Promise<(RoutingRule & { tenantId: string })[]> {
     const rows = await this.db.all<RoutingRow>(
-      'SELECT * FROM routing_rules WHERE enabled = 1 ORDER BY tenant_id, did'
+      'SELECT * FROM routing_rules WHERE enabled = true ORDER BY tenant_id, did'
     );
     return rows.map(rowToRouting);
   }
@@ -131,7 +131,7 @@ export class RoutingRepository {
    * Get enabled routing rules
    */
   async findEnabled(tenantId?: string): Promise<(RoutingRule & { tenantId: string })[]> {
-    let query = 'SELECT * FROM routing_rules WHERE enabled = 1';
+    let query = 'SELECT * FROM routing_rules WHERE enabled = true';
     const params: unknown[] = [];
 
     if (tenantId) {
