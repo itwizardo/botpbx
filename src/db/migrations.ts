@@ -68,7 +68,7 @@ const migrations: Migration[] = [
         number TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         password TEXT NOT NULL,
-        enabled INTEGER DEFAULT 1,
+        enabled BOOLEAN DEFAULT true,
         created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
       );
 
@@ -78,7 +78,7 @@ const migrations: Migration[] = [
         did TEXT NOT NULL UNIQUE,
         target_type TEXT NOT NULL CHECK(target_type IN ('ivr_menu', 'extension', 'queue')),
         target_id TEXT NOT NULL,
-        enabled INTEGER DEFAULT 1,
+        enabled BOOLEAN DEFAULT true,
         created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
       );
 
@@ -194,7 +194,7 @@ const migrations: Migration[] = [
         password_hash TEXT NOT NULL,
         role TEXT DEFAULT 'viewer' CHECK(role IN ('admin', 'supervisor', 'viewer')),
         display_name TEXT,
-        enabled INTEGER DEFAULT 1,
+        enabled BOOLEAN DEFAULT true,
         last_login_at INTEGER,
         created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
       );
@@ -259,7 +259,7 @@ const migrations: Migration[] = [
         ring_time INTEGER DEFAULT 20,
         failover_destination TEXT,
         failover_type TEXT DEFAULT 'voicemail' CHECK(failover_type IN ('voicemail', 'extension', 'ivr', 'hangup')),
-        enabled INTEGER DEFAULT 1,
+        enabled BOOLEAN DEFAULT true,
         created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
       );
 
@@ -323,7 +323,7 @@ const migrations: Migration[] = [
         id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES web_users(id) ON DELETE CASCADE,
         permission TEXT NOT NULL,
-        granted INTEGER DEFAULT 1,
+        granted BOOLEAN DEFAULT true,
         created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
         UNIQUE(user_id, permission)
       );
@@ -349,7 +349,7 @@ const migrations: Migration[] = [
         join_announcement_id TEXT REFERENCES prompts(id) ON DELETE SET NULL,
         announce_frequency INTEGER DEFAULT 0,
         announce_position INTEGER DEFAULT 0,
-        enabled INTEGER DEFAULT 1,
+        enabled BOOLEAN DEFAULT true,
         created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
       );
 
@@ -359,7 +359,7 @@ const migrations: Migration[] = [
         queue_id TEXT NOT NULL REFERENCES queues(id) ON DELETE CASCADE,
         extension_number TEXT NOT NULL,
         penalty INTEGER DEFAULT 0,
-        paused INTEGER DEFAULT 0,
+        paused BOOLEAN DEFAULT false,
         created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
         UNIQUE(queue_id, extension_number)
       );
@@ -387,8 +387,8 @@ const migrations: Migration[] = [
         from_domain TEXT,
         context TEXT DEFAULT 'from-trunk',
         codecs TEXT DEFAULT 'ulaw,alaw',
-        enabled INTEGER DEFAULT 1,
-        register INTEGER DEFAULT 0,
+        enabled BOOLEAN DEFAULT true,
+        register BOOLEAN DEFAULT false,
         created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
       );
 
@@ -410,7 +410,7 @@ const migrations: Migration[] = [
         prefix_to_add TEXT,
         prefix_to_strip INTEGER DEFAULT 0,
         caller_id TEXT,
-        enabled INTEGER DEFAULT 1,
+        enabled BOOLEAN DEFAULT true,
         created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
       );
 
@@ -442,7 +442,7 @@ const migrations: Migration[] = [
         silence_timeout_ms INTEGER DEFAULT 3000,
         interrupt_threshold REAL DEFAULT 0.5,
         enabled_functions TEXT,
-        enabled INTEGER DEFAULT 1,
+        enabled BOOLEAN DEFAULT true,
         created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
         updated_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
       );
@@ -489,7 +489,7 @@ const migrations: Migration[] = [
         ended_at INTEGER,
         latency_ms INTEGER,
         stt_confidence REAL,
-        was_interrupted INTEGER DEFAULT 0,
+        was_interrupted BOOLEAN DEFAULT false,
         created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
       );
 
@@ -524,7 +524,7 @@ const migrations: Migration[] = [
         rate_limit_per_day INTEGER DEFAULT 10000,
         monthly_budget_cents INTEGER,
         current_month_usage_cents INTEGER DEFAULT 0,
-        enabled INTEGER DEFAULT 1,
+        enabled BOOLEAN DEFAULT true,
         last_used_at INTEGER,
         expires_at INTEGER,
         created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
@@ -554,8 +554,8 @@ const migrations: Migration[] = [
         parameters TEXT NOT NULL,
         handler_type TEXT NOT NULL CHECK(handler_type IN ('builtin', 'webhook', 'script')),
         handler_config TEXT NOT NULL,
-        requires_confirmation INTEGER DEFAULT 0,
-        enabled INTEGER DEFAULT 1,
+        requires_confirmation BOOLEAN DEFAULT false,
+        enabled BOOLEAN DEFAULT true,
         created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
       );
 
@@ -568,9 +568,9 @@ const migrations: Migration[] = [
         api_endpoint TEXT,
         config TEXT,
         last_health_check INTEGER,
-        is_healthy INTEGER DEFAULT 1,
+        is_healthy BOOLEAN DEFAULT true,
         priority INTEGER DEFAULT 0,
-        enabled INTEGER DEFAULT 1,
+        enabled BOOLEAN DEFAULT true,
         created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
         UNIQUE(provider_type, provider_name)
       );
@@ -616,14 +616,14 @@ const migrations: Migration[] = [
     version: 14,
     name: 'add_ai_realtime_mode',
     up: `
-      ALTER TABLE ai_agents ADD COLUMN IF NOT EXISTS use_realtime INTEGER DEFAULT 0;
+      ALTER TABLE ai_agents ADD COLUMN IF NOT EXISTS use_realtime BOOLEAN DEFAULT false;
     `,
   },
   {
     version: 15,
     name: 'add_must_change_password',
     up: `
-      ALTER TABLE web_users ADD COLUMN IF NOT EXISTS must_change_password INTEGER DEFAULT 0;
+      ALTER TABLE web_users ADD COLUMN IF NOT EXISTS must_change_password BOOLEAN DEFAULT false;
     `,
   },
   {
@@ -658,9 +658,9 @@ const migrations: Migration[] = [
         duration_seconds INTEGER,
         file_path TEXT NOT NULL,
         transcription_id TEXT REFERENCES transcriptions(id) ON DELETE SET NULL,
-        read INTEGER DEFAULT 0,
-        notified INTEGER DEFAULT 0,
-        urgent INTEGER DEFAULT 0,
+        read BOOLEAN DEFAULT false,
+        notified BOOLEAN DEFAULT false,
+        urgent BOOLEAN DEFAULT false,
         msg_id TEXT,
         origdate TEXT,
         origtime TEXT,
@@ -676,7 +676,7 @@ const migrations: Migration[] = [
         action_items TEXT,
         sentiment TEXT CHECK(sentiment IN ('positive', 'neutral', 'negative', 'mixed')),
         caller_intent TEXT,
-        follow_up_needed INTEGER DEFAULT 0,
+        follow_up_needed BOOLEAN DEFAULT false,
         follow_up_notes TEXT,
         generated_by TEXT NOT NULL,
         model_used TEXT,
@@ -715,7 +715,7 @@ const migrations: Migration[] = [
     version: 18,
     name: 'add_stir_shaken_to_trunks',
     up: `
-      ALTER TABLE sip_trunks ADD COLUMN IF NOT EXISTS stir_shaken_enabled INTEGER DEFAULT 0;
+      ALTER TABLE sip_trunks ADD COLUMN IF NOT EXISTS stir_shaken_enabled BOOLEAN DEFAULT false;
       ALTER TABLE sip_trunks ADD COLUMN IF NOT EXISTS stir_shaken_attest TEXT;
       ALTER TABLE sip_trunks ADD COLUMN IF NOT EXISTS stir_shaken_profile TEXT;
     `
@@ -757,7 +757,7 @@ const migrations: Migration[] = [
         voice TEXT DEFAULT 'alloy',
         enabled_functions TEXT DEFAULT '[]',
         icon TEXT,
-        is_default INTEGER DEFAULT 0,
+        is_default BOOLEAN DEFAULT false,
         created_at INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
       );
 
@@ -895,11 +895,11 @@ const migrations: Migration[] = [
       ALTER TABLE dialer_campaigns ADD COLUMN IF NOT EXISTS handler_type TEXT DEFAULT 'ivr' CHECK(handler_type IN ('ivr', 'ai_agent', 'ring_group', 'extension'));
       ALTER TABLE dialer_campaigns ADD COLUMN IF NOT EXISTS description TEXT;
       ALTER TABLE dialer_campaigns ADD COLUMN IF NOT EXISTS caller_id TEXT;
-      ALTER TABLE dialer_campaigns ADD COLUMN IF NOT EXISTS amd_enabled INTEGER DEFAULT 1;
+      ALTER TABLE dialer_campaigns ADD COLUMN IF NOT EXISTS amd_enabled BOOLEAN DEFAULT true;
       ALTER TABLE dialer_campaigns ADD COLUMN IF NOT EXISTS answering_machine_count INTEGER DEFAULT 0;
 
       -- Add answering_machine tracking to campaign_contacts
-      ALTER TABLE campaign_contacts ADD COLUMN IF NOT EXISTS amd_detected INTEGER DEFAULT 0;
+      ALTER TABLE campaign_contacts ADD COLUMN IF NOT EXISTS amd_detected BOOLEAN DEFAULT false;
       ALTER TABLE campaign_contacts ADD COLUMN IF NOT EXISTS amd_status TEXT;
 
       -- Indexes
@@ -912,7 +912,7 @@ const migrations: Migration[] = [
     name: 'add_ai_agent_flow_builder',
     up: `
       -- Add flow builder columns to ai_agents
-      ALTER TABLE ai_agents ADD COLUMN IF NOT EXISTS flow_enabled INTEGER DEFAULT 0;
+      ALTER TABLE ai_agents ADD COLUMN IF NOT EXISTS flow_enabled BOOLEAN DEFAULT false;
       ALTER TABLE ai_agents ADD COLUMN IF NOT EXISTS flow_data TEXT;
 
       -- Flow execution state tracking table
@@ -962,7 +962,7 @@ const migrations: Migration[] = [
     name: 'add_queue_position_announcements',
     up: `
       -- Dynamic TTS position announcements for call queues
-      ALTER TABLE queues ADD COLUMN IF NOT EXISTS position_announce_enabled INTEGER DEFAULT 0;
+      ALTER TABLE queues ADD COLUMN IF NOT EXISTS position_announce_enabled BOOLEAN DEFAULT false;
       ALTER TABLE queues ADD COLUMN IF NOT EXISTS position_announce_voice TEXT;
       ALTER TABLE queues ADD COLUMN IF NOT EXISTS position_announce_provider TEXT DEFAULT 'elevenlabs';
       ALTER TABLE queues ADD COLUMN IF NOT EXISTS position_announce_language TEXT DEFAULT 'en';
@@ -1016,7 +1016,7 @@ const migrations: Migration[] = [
     version: 28,
     name: 'add_group_allow_redial',
     up: `
-      ALTER TABLE contact_groups ADD COLUMN IF NOT EXISTS allow_redial INTEGER DEFAULT 0;
+      ALTER TABLE contact_groups ADD COLUMN IF NOT EXISTS allow_redial BOOLEAN DEFAULT false;
     `
   },
   {
@@ -1024,13 +1024,13 @@ const migrations: Migration[] = [
     name: 'add_call_forwarding_and_dnd',
     up: `
       -- Call Forwarding settings for extensions
-      ALTER TABLE extensions ADD COLUMN IF NOT EXISTS forward_enabled INTEGER DEFAULT 0;
+      ALTER TABLE extensions ADD COLUMN IF NOT EXISTS forward_enabled BOOLEAN DEFAULT false;
       ALTER TABLE extensions ADD COLUMN IF NOT EXISTS forward_destination TEXT;
       ALTER TABLE extensions ADD COLUMN IF NOT EXISTS forward_type TEXT DEFAULT 'always';
       ALTER TABLE extensions ADD COLUMN IF NOT EXISTS forward_timeout INTEGER DEFAULT 20;
 
       -- Do Not Disturb setting
-      ALTER TABLE extensions ADD COLUMN IF NOT EXISTS dnd_enabled INTEGER DEFAULT 0;
+      ALTER TABLE extensions ADD COLUMN IF NOT EXISTS dnd_enabled BOOLEAN DEFAULT false;
 
       -- Indexes
       CREATE INDEX IF NOT EXISTS idx_extensions_dnd ON extensions(dnd_enabled);
