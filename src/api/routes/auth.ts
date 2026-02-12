@@ -3,6 +3,38 @@ import { ApiContext } from '../server';
 import { apiLogger } from '../../utils/logger';
 
 export function registerAuthRoutes(server: FastifyInstance, ctx: ApiContext): void {
+  // Register (first-user setup only)
+  server.post('/register', async (request: FastifyRequest, reply: FastifyReply) => {
+    const existingUsers = await ctx.userRepo.findAll();
+    if (existingUsers.length > 0) {
+      return reply.status(403).send({ error: 'Forbidden', message: 'Registration is disabled' });
+    }
+
+    const { username, password, role, displayName } = request.body as {
+      username: string;
+      password: string;
+      role?: string;
+      displayName?: string;
+    };
+
+    if (!username || !password) {
+      return reply.status(400).send({ error: 'Bad Request', message: 'Username and password required' });
+    }
+
+    try {
+      const user = await ctx.authService.createUser({
+        username,
+        password,
+        role: (role as 'admin' | 'supervisor' | 'viewer') || 'admin',
+        displayName,
+      });
+
+      return reply.status(201).send({ user });
+    } catch (err: any) {
+      return reply.status(400).send({ error: 'Bad Request', message: err.message });
+    }
+  });
+
   // Login
   server.post('/login', async (request: FastifyRequest, reply: FastifyReply) => {
     const { username, password } = request.body as { username: string; password: string };

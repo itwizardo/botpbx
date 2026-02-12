@@ -739,7 +739,7 @@ const migrations: Migration[] = [
       -- Update defaults (use PostgreSQL boolean syntax)
       ALTER TABLE ai_agents ALTER COLUMN voice_provider SET DEFAULT 'openai_realtime';
       ALTER TABLE ai_agents ALTER COLUMN stt_provider SET DEFAULT 'openai_realtime';
-      ALTER TABLE ai_agents ALTER COLUMN use_realtime SET DEFAULT 1;
+      ALTER TABLE ai_agents ALTER COLUMN use_realtime SET DEFAULT true;
     `
   },
   {
@@ -772,7 +772,7 @@ const migrations: Migration[] = [
         'Thank you for calling. My name is Nova, and I''m here to help you today. How can I assist you?',
         'sage',
         '["transfer_to_queue", "schedule_callback", "collect_information", "send_sms"]',
-        1
+        true
       ),
       (
         'tpl-sales',
@@ -783,7 +783,7 @@ const migrations: Migration[] = [
         'Hi there! Thanks for your interest in our services. I''d love to learn more about what you''re looking for. What brings you to us today?',
         'shimmer',
         '["collect_information", "transfer_to_extension", "send_sms", "schedule_callback"]',
-        1
+        true
       ),
       (
         'tpl-appointments',
@@ -794,7 +794,7 @@ const migrations: Migration[] = [
         'Hello! I can help you schedule an appointment. Would you like to book a new appointment, reschedule an existing one, or check on your upcoming appointments?',
         'coral',
         '["collect_information", "schedule_callback", "send_sms"]',
-        1
+        true
       ),
       (
         'tpl-faq',
@@ -805,7 +805,7 @@ const migrations: Migration[] = [
         'Hello! I''m here to answer your questions. What would you like to know?',
         'alloy',
         '["transfer_to_extension", "transfer_to_queue"]',
-        1
+        true
       ),
       (
         'tpl-after-hours',
@@ -816,7 +816,7 @@ const migrations: Migration[] = [
         'Thank you for calling. Our office is currently closed, but I''d be happy to help. Would you like to leave a message or schedule a callback for our next business day?',
         'echo',
         '["schedule_callback", "collect_information", "send_sms"]',
-        1
+        true
       )
       ON CONFLICT (id) DO NOTHING;
 
