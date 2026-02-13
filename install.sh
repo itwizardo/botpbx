@@ -182,7 +182,9 @@ DB_PASSWORD=$(generate_password 24)
 JWT_SECRET=$(openssl rand -base64 32)
 AMI_SECRET=$(generate_password 20)
 ADMIN_PASSWORD="admin"
-PUBLIC_IP=$(curl -s --connect-timeout 5 ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
+PUBLIC_IP=$(curl -s --max-time 5 ifconfig.me 2>/dev/null | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' || \
+            curl -s --max-time 5 api.ipify.org 2>/dev/null | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' || \
+            hostname -I | awk '{print $1}')
 
 log "  - Database password: generated"
 log "  - JWT secret: generated"
