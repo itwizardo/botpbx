@@ -34,6 +34,29 @@ export function registerSettingsRoutes(server: FastifyInstance, ctx: ApiContext)
     return { key, value };
   });
 
+  // Bulk update settings
+  server.put('/', async (request: FastifyRequest, reply: FastifyReply) => {
+    if (request.user?.role !== 'admin') {
+      return reply.status(403).send({ error: 'Forbidden', message: 'Admin access required' });
+    }
+
+    const settings = request.body as Record<string, string>;
+
+    if (!settings || typeof settings !== 'object') {
+      return reply.status(400).send({ error: 'Bad Request', message: 'Expected an object of key-value pairs' });
+    }
+
+    for (const [key, value] of Object.entries(settings)) {
+      if (value === '' || value === null || value === undefined) {
+        await ctx.settingsRepo.delete(key);
+      } else {
+        await ctx.settingsRepo.set(key, value);
+      }
+    }
+
+    return { updated: true, keys: Object.keys(settings) };
+  });
+
   // Update setting
   server.put('/:key', async (request: FastifyRequest, reply: FastifyReply) => {
     if (request.user?.role !== 'admin') {

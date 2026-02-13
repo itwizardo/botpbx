@@ -98,10 +98,10 @@ export class RealtimeSession extends EventEmitter {
     this.config = {
       model: 'gpt-4o-realtime-preview-2024-12-17',
       voice: 'alloy',
-      // Use G.711 μ-law for native 8kHz support - no sample rate conversion needed!
-      // This significantly improves audio quality by eliminating 8kHz↔24kHz resampling
-      inputAudioFormat: 'g711_ulaw',
-      outputAudioFormat: 'g711_ulaw',
+      // Use native PCM16 at 24kHz for best audio quality from OpenAI
+      // Resample locally between Asterisk's 8kHz and OpenAI's 24kHz using FIR filtering
+      inputAudioFormat: 'pcm16',
+      outputAudioFormat: 'pcm16',
       turnDetection: {
         type: 'server_vad',
         threshold: 0.5,
@@ -601,6 +601,25 @@ export class OpenAIRealtimeService {
   }
 }
 
+// Pre-computed FIR low-pass filter kernel (48-tap, Blackman window)
+// Cutoff at 1/3 normalized frequency (4kHz at 24kHz = Nyquist for 8kHz output)
+// Eliminates aliasing artifacts that cause metallic/robotic sound
+const FIR_TAPS = 48;
+const FIR_CUTOFF = 1.0 / 3.0;
+const firKernel: number[] = [];
+(function computeFirKernel() {
+  const M = FIR_TAPS - 1;
+  let sum = 0;
+  for (let i = 0; i < FIR_TAPS; i++) {
+    const n = i - M / 2;
+    const sinc = n === 0 ? 2 * Math.PI * FIR_CUTOFF : Math.sin(2 * Math.PI * FIR_CUTOFF * n) / n;
+    const window = 0.42 - 0.5 * Math.cos(2 * Math.PI * i / M) + 0.08 * Math.cos(4 * Math.PI * i / M);
+    firKernel[i] = sinc * window;
+    sum += firKernel[i];
+  }
+  for (let i = 0; i < FIR_TAPS; i++) firKernel[i] /= sum;
+})();
+
 /**
  * Audio format conversion utilities
  */
@@ -704,37 +723,38 @@ export const AudioUtils = {
   },
 
   /**
-   * Upsample by integer factor using linear interpolation
-   * (Simple but works well for speech-to-text input)
+   * Upsample by integer factor using zero-insertion + FIR interpolation
+   * Produces cleaner output than linear interpolation for speech audio
    */
   upsample(pcmData: Buffer, factor: number): Buffer {
     const inputSamples = pcmData.length / 2;
     const outputSamples = inputSamples * factor;
     const output = Buffer.alloc(outputSamples * 2);
 
-    for (let i = 0; i < inputSamples - 1; i++) {
-      const s1 = pcmData.readInt16LE(i * 2);
-      const s2 = pcmData.readInt16LE((i + 1) * 2);
-
-      for (let j = 0; j < factor; j++) {
-        const t = j / factor;
-        const sample = Math.round(s1 * (1 - t) + s2 * t);
-        output.writeInt16LE(sample, (i * factor + j) * 2);
+    // Zero-insertion: place input samples at every `factor`-th position
+    // Then convolve with FIR kernel scaled by factor to compensate gain
+    for (let o = 0; o < outputSamples; o++) {
+      let sum = 0;
+      for (let k = 0; k < FIR_TAPS; k++) {
+        const srcIdx = o - k;
+        // Only non-zero at positions that are multiples of factor
+        if (srcIdx >= 0 && srcIdx < outputSamples && srcIdx % factor === 0) {
+          const inputIdx = srcIdx / factor;
+          if (inputIdx < inputSamples) {
+            sum += pcmData.readInt16LE(inputIdx * 2) * firKernel[k] * factor;
+          }
+        }
       }
-    }
-
-    // Last sample
-    const lastSample = pcmData.readInt16LE((inputSamples - 1) * 2);
-    for (let j = 0; j < factor; j++) {
-      output.writeInt16LE(lastSample, ((inputSamples - 1) * factor + j) * 2);
+      const clamped = Math.max(-32768, Math.min(32767, Math.round(sum)));
+      output.writeInt16LE(clamped, o * 2);
     }
 
     return output;
   },
 
   /**
-   * Downsample by integer factor
-   * Uses weighted averaging for smoother output
+   * Downsample by integer factor using FIR anti-alias filter + decimation
+   * Convolves with low-pass FIR kernel then takes every `factor`-th sample
    */
   downsample(pcmData: Buffer, factor: number): Buffer {
     const inputSamples = pcmData.length / 2;
@@ -742,25 +762,19 @@ export const AudioUtils = {
     const output = Buffer.alloc(outputSamples * 2);
 
     for (let i = 0; i < outputSamples; i++) {
-      // Use center sample with slight weighted average from neighbors
-      const center = i * factor + Math.floor(factor / 2);
+      const center = i * factor;
       let sum = 0;
-      let weight = 0;
 
-      // Weighted average centered on the output sample position
-      for (let j = 0; j < factor; j++) {
-        const idx = i * factor + j;
-        if (idx < inputSamples) {
-          // Triangle window - center samples weighted more
-          const dist = Math.abs(j - factor / 2);
-          const w = 1 - (dist / factor);
-          sum += pcmData.readInt16LE(idx * 2) * w;
-          weight += w;
+      // Convolve with FIR kernel centered on the decimation point
+      for (let k = 0; k < FIR_TAPS; k++) {
+        const srcIdx = center - (FIR_TAPS >> 1) + k;
+        if (srcIdx >= 0 && srcIdx < inputSamples) {
+          sum += pcmData.readInt16LE(srcIdx * 2) * firKernel[k];
         }
       }
 
-      const sample = Math.round(sum / weight);
-      output.writeInt16LE(sample, i * 2);
+      const clamped = Math.max(-32768, Math.min(32767, Math.round(sum)));
+      output.writeInt16LE(clamped, i * 2);
     }
 
     return output;

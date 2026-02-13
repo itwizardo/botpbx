@@ -24,36 +24,35 @@ import type { Extension } from '@/types/models';
 
 // Copy function that works in HTTP contexts and inside dialogs
 const copyTextToClipboard = async (text: string): Promise<boolean> => {
-  // Try modern Clipboard API first (works in HTTPS and some HTTP contexts)
-  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+  // Try Clipboard API first — works in modern browsers even on HTTP with user gestures
+  if (navigator.clipboard) {
     try {
       await navigator.clipboard.writeText(text);
       return true;
-    } catch (e) {
-      console.warn('Clipboard API failed, trying fallback:', e);
+    } catch {
+      // Fall through to execCommand fallback
     }
   }
 
-  // Fallback using textarea (works in HTTP contexts)
+  // Fallback: append textarea inside dialog to avoid Radix focus trap stealing focus
   const textArea = document.createElement('textarea');
   textArea.value = text;
-  textArea.style.position = 'fixed';
-  textArea.style.left = '-999999px';
-  textArea.style.top = '-999999px';
+  textArea.setAttribute('readonly', '');
+  textArea.style.position = 'absolute';
+  textArea.style.left = '-9999px';
   textArea.style.opacity = '0';
-  document.body.appendChild(textArea);
-  textArea.focus();
+  const target = document.querySelector('[role="dialog"]') || document.body;
+  target.appendChild(textArea);
   textArea.select();
-  textArea.setSelectionRange(0, text.length);
 
   let success = false;
   try {
     success = document.execCommand('copy');
-  } catch (e) {
-    console.error('Fallback copy failed:', e);
+  } catch {
+    // copy failed
   }
 
-  document.body.removeChild(textArea);
+  target.removeChild(textArea);
   return success;
 };
 

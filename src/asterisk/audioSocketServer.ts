@@ -44,7 +44,7 @@ const OPENAI_SAMPLE_RATE = 24000;
 const SAMPLE_RATE_RATIO = OPENAI_SAMPLE_RATE / ASTERISK_SAMPLE_RATE; // 3
 
 // Buffer for smooth playback (accumulate before sending to reduce jitter)
-const MIN_PLAYBACK_BUFFER_MS = 60;
+const MIN_PLAYBACK_BUFFER_MS = 80;
 const MIN_PLAYBACK_SAMPLES = (ASTERISK_SAMPLE_RATE * MIN_PLAYBACK_BUFFER_MS) / 1000;
 
 /**
@@ -507,8 +507,7 @@ export class AudioSocketCall extends EventEmitter {
 
   /**
    * Handle audio input from Asterisk
-   * Convert 8kHz slin to G.711 μ-law and send to OpenAI Realtime
-   * (No sample rate conversion needed - both use 8kHz!)
+   * Upsample 8kHz slin to 24kHz PCM16 and send to OpenAI Realtime
    */
   private handleAudioInput(audioData: Buffer): void {
     // Handle ElevenLabs mode
@@ -523,18 +522,16 @@ export class AudioSocketCall extends EventEmitter {
       return;
     }
 
-    // Convert slin (8kHz PCM16) to G.711 μ-law (8kHz)
-    // This is a simple encoding - no sample rate change, no quality loss!
-    const ulawData = AudioUtils.pcm16ToUlaw(audioData);
+    // Upsample 8kHz PCM16 to 24kHz PCM16 using FIR interpolation
+    const pcm24k = AudioUtils.upsample(audioData, SAMPLE_RATE_RATIO);
 
     // Send to OpenAI Realtime
-    this.realtimeSession.sendAudio(ulawData);
+    this.realtimeSession.sendAudio(pcm24k);
   }
 
   /**
    * Handle audio output from OpenAI Realtime
-   * Convert G.711 μ-law to 8kHz slin and send to Asterisk
-   * (No sample rate conversion needed - both use 8kHz!)
+   * Downsample 24kHz PCM16 to 8kHz slin and send to Asterisk
    */
   private handleRealtimeAudio(audioData: Buffer): void {
     if (this.isClosed || this.socket.destroyed) {
@@ -544,9 +541,8 @@ export class AudioSocketCall extends EventEmitter {
 
     logger.debug(`[AudioSocket:${this.uuid}] Received ${audioData.length} bytes from OpenAI`);
 
-    // Convert G.711 μ-law (8kHz) to slin (8kHz PCM16)
-    // This is a simple decoding - no sample rate change, no quality loss!
-    const slin8k = AudioUtils.ulawToPcm16(audioData);
+    // Downsample 24kHz PCM16 to 8kHz PCM16 using FIR anti-alias filter
+    const slin8k = AudioUtils.downsample(audioData, SAMPLE_RATE_RATIO);
 
     // Add to playback buffer
     this.playbackBuffer = Buffer.concat([this.playbackBuffer, slin8k]);

@@ -155,20 +155,61 @@ export class TTSService {
   // =====================
 
   /**
-   * Convert MP3 to WAV format for Asterisk compatibility
-   * Outputs 8kHz mono PCM WAV which Asterisk can play natively
+   * Convert audio to WAV format for Asterisk compatibility
+   * Uses SoX high-quality resampler and generates:
+   * - 8kHz .wav for Asterisk narrowband
+   * - 16kHz .sln16 for Asterisk wideband (G.722)
+   * - Full-quality _hq.wav for browser preview
    */
-  private async convertToWav(mp3Path: string): Promise<string> {
-    const wavPath = mp3Path.replace(/\.mp3$/, '.wav');
+  private async convertToWav(inputPath: string): Promise<string> {
+    const wavPath = inputPath.replace(/\.[^.]+$/, '.wav');
+    const sln16Path = inputPath.replace(/\.[^.]+$/, '.sln16');
+    const hqWavPath = inputPath.replace(/\.[^.]+$/, '_hq.wav');
     try {
-      // Convert to 8kHz mono PCM WAV for Asterisk
-      await execAsync(`ffmpeg -i "${mp3Path}" -ar 8000 -ac 1 -acodec pcm_s16le -y "${wavPath}" 2>/dev/null`);
-      ttsLogger.info(`Converted to WAV: ${wavPath}`);
+      // High-quality WAV for browser preview (preserve original sample rate)
+      await execAsync(`ffmpeg -i "${inputPath}" -ac 1 -acodec pcm_s16le -y "${hqWavPath}" 2>/dev/null`);
+      ttsLogger.info(`Created HQ preview WAV: ${hqWavPath}`);
+
+      // Convert to 8kHz mono PCM WAV using SoX high-quality resampler
+      await execAsync(`ffmpeg -i "${inputPath}" -af aresample=resampler=soxr -ar 8000 -ac 1 -acodec pcm_s16le -y "${wavPath}" 2>/dev/null`);
+      ttsLogger.info(`Converted to WAV (8kHz soxr): ${wavPath}`);
+
+      // Also generate 16kHz sln16 for wideband SIP channels (G.722 etc.)
+      await execAsync(`ffmpeg -i "${inputPath}" -af aresample=resampler=soxr -ar 16000 -ac 1 -f s16le -y "${sln16Path}" 2>/dev/null`);
+      ttsLogger.info(`Converted to SLN16 (16kHz soxr): ${sln16Path}`);
+
       return wavPath;
     } catch (error) {
-      ttsLogger.error(`Failed to convert ${mp3Path} to WAV:`, error);
-      // Return mp3 path as fallback (won't work but at least we tried)
-      return mp3Path;
+      ttsLogger.error(`Failed to convert ${inputPath} to WAV:`, error);
+      return inputPath;
+    }
+  }
+
+  /**
+   * Convert raw PCM audio (headerless) to Asterisk formats
+   * Used for providers that return raw PCM (ElevenLabs, OpenAI, Google)
+   */
+  private async convertRawPcmToWav(rawPath: string, sampleRate: number): Promise<string> {
+    const wavPath = rawPath.replace(/\.[^.]+$/, '.wav');
+    const sln16Path = rawPath.replace(/\.[^.]+$/, '.sln16');
+    const hqWavPath = rawPath.replace(/\.[^.]+$/, '_hq.wav');
+    try {
+      // High-quality WAV for browser preview (wrap raw PCM at native sample rate)
+      await execAsync(`ffmpeg -f s16le -ar ${sampleRate} -ac 1 -i "${rawPath}" -acodec pcm_s16le -y "${hqWavPath}" 2>/dev/null`);
+      ttsLogger.info(`Created HQ preview WAV (${sampleRate}Hz): ${hqWavPath}`);
+
+      // Convert raw PCM to 8kHz WAV using SoX resampler
+      await execAsync(`ffmpeg -f s16le -ar ${sampleRate} -ac 1 -i "${rawPath}" -af aresample=resampler=soxr -ar 8000 -ac 1 -acodec pcm_s16le -y "${wavPath}" 2>/dev/null`);
+      ttsLogger.info(`Converted raw PCM (${sampleRate}Hz) to WAV (8kHz soxr): ${wavPath}`);
+
+      // Also generate 16kHz sln16 for wideband channels
+      await execAsync(`ffmpeg -f s16le -ar ${sampleRate} -ac 1 -i "${rawPath}" -af aresample=resampler=soxr -ar 16000 -ac 1 -f s16le -y "${sln16Path}" 2>/dev/null`);
+      ttsLogger.info(`Converted raw PCM to SLN16 (16kHz soxr): ${sln16Path}`);
+
+      return wavPath;
+    } catch (error) {
+      ttsLogger.error(`Failed to convert raw PCM to WAV:`, error);
+      return rawPath;
     }
   }
 
@@ -572,12 +613,12 @@ export class TTSService {
         ttsLogger.info(`Using language_code: ${language} for multilingual output`);
       }
 
-      const response = await fetch(`${this.baseUrl}/text-to-speech/${voice}`, {
+      // Request raw PCM at 24kHz to avoid lossy MP3 compression
+      const response = await fetch(`${this.baseUrl}/text-to-speech/${voice}?output_format=pcm_24000`, {
         method: 'POST',
         headers: {
           'xi-api-key': this.apiKey!,
           'Content-Type': 'application/json',
-          'Accept': 'audio/mpeg',
         },
         body: JSON.stringify(requestBody),
       });
@@ -588,16 +629,16 @@ export class TTSService {
         return { success: false, error: `API error: ${response.status}` };
       }
 
-      // Save the audio file
-      const mp3Path = path.join(this.audioPath, `${promptId}.mp3`);
+      // Save raw PCM (24kHz, 16-bit, mono)
+      const rawPath = path.join(this.audioPath, `${promptId}.raw`);
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      fs.writeFileSync(mp3Path, buffer);
+      fs.writeFileSync(rawPath, buffer);
 
-      ttsLogger.info(`TTS audio saved: ${mp3Path}`);
+      ttsLogger.info(`TTS raw PCM saved: ${rawPath} (${buffer.length} bytes)`);
 
-      // Convert to WAV for Asterisk compatibility
-      const wavPath = await this.convertToWav(mp3Path);
+      // Convert raw PCM to Asterisk formats (lossless pipeline)
+      const wavPath = await this.convertRawPcmToWav(rawPath, 24000);
 
       return { success: true, data: wavPath };
     } catch (error) {
@@ -750,6 +791,7 @@ export class TTSService {
     ttsLogger.info(`Generating OpenAI TTS for prompt ${promptId} with voice ${selectedVoice}`);
 
     try {
+      // Use tts-1-hd for highest quality, raw PCM to avoid lossy compression
       const response = await fetch('https://api.openai.com/v1/audio/speech', {
         method: 'POST',
         headers: {
@@ -757,10 +799,10 @@ export class TTSService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'tts-1',  // Use tts-1 for speed, tts-1-hd for quality
+          model: 'tts-1-hd',
           input: text,
           voice: selectedVoice,
-          response_format: 'mp3',
+          response_format: 'pcm',
         }),
       });
 
@@ -770,16 +812,16 @@ export class TTSService {
         return { success: false, error: `OpenAI API error: ${response.status}` };
       }
 
-      // Save the MP3 file
-      const mp3Path = path.join(this.audioPath, `${promptId}.mp3`);
+      // Save raw PCM (24kHz, 16-bit, mono)
+      const rawPath = path.join(this.audioPath, `${promptId}.raw`);
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      fs.writeFileSync(mp3Path, buffer);
+      fs.writeFileSync(rawPath, buffer);
 
-      ttsLogger.info(`OpenAI TTS audio saved: ${mp3Path} (${buffer.length} bytes)`);
+      ttsLogger.info(`OpenAI TTS raw PCM saved: ${rawPath} (${buffer.length} bytes)`);
 
-      // Convert to WAV for Asterisk compatibility
-      const wavPath = await this.convertToWav(mp3Path);
+      // Convert raw PCM to Asterisk formats (lossless pipeline)
+      const wavPath = await this.convertRawPcmToWav(rawPath, 24000);
 
       return { success: true, data: wavPath };
     } catch (error) {
@@ -1102,7 +1144,8 @@ export class TTSService {
             name: selectedVoice,
           },
           audioConfig: {
-            audioEncoding: 'MP3',
+            audioEncoding: 'LINEAR16',
+            sampleRateHertz: 24000,
             speakingRate: 1.0,
             pitch: 0,
           },
@@ -1115,16 +1158,17 @@ export class TTSService {
         return { success: false, error: `Google API error: ${response.status}` };
       }
 
+      // Google LINEAR16 returns raw PCM as base64
       const data = await response.json() as { audioContent: string };
       const audioBuffer = Buffer.from(data.audioContent, 'base64');
 
-      const mp3Path = path.join(this.audioPath, `${promptId}.mp3`);
-      fs.writeFileSync(mp3Path, audioBuffer);
+      const rawPath = path.join(this.audioPath, `${promptId}.raw`);
+      fs.writeFileSync(rawPath, audioBuffer);
 
-      ttsLogger.info(`Google TTS audio saved: ${mp3Path} (${audioBuffer.length} bytes)`);
+      ttsLogger.info(`Google TTS raw PCM saved: ${rawPath} (${audioBuffer.length} bytes)`);
 
-      // Convert to WAV for Asterisk compatibility
-      const wavPath = await this.convertToWav(mp3Path);
+      // Convert raw PCM to Asterisk formats (lossless pipeline)
+      const wavPath = await this.convertRawPcmToWav(rawPath, 24000);
 
       return { success: true, data: wavPath };
     } catch (error) {
@@ -1178,10 +1222,13 @@ export class TTSService {
     const mp3Path = path.join(this.audioPath, `${promptId}.mp3`);
     const wavPath = path.join(this.audioPath, `${promptId}.wav`);
     const slnPath = path.join(this.audioPath, `${promptId}.sln`);
+    const sln16Path = path.join(this.audioPath, `${promptId}.sln16`);
+    const rawPath = path.join(this.audioPath, `${promptId}.raw`);
+    const hqWavPath = path.join(this.audioPath, `${promptId}_hq.wav`);
 
     let deleted = false;
 
-    for (const filePath of [mp3Path, wavPath, slnPath]) {
+    for (const filePath of [mp3Path, wavPath, slnPath, sln16Path, rawPath, hqWavPath]) {
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
         deleted = true;

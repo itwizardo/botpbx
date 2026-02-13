@@ -271,7 +271,21 @@ export default function ContactGroupsPage() {
                       <DropdownMenuItem onClick={async () => {
                         const result = await contactGroupsApi.exportForCampaign(group.id, true);
                         const csv = result.contacts.map(c => c.name ? `${c.phoneNumber},${c.name}` : c.phoneNumber).join('\n');
-                        navigator.clipboard.writeText(csv);
+                        try {
+                          if (navigator.clipboard) {
+                            await navigator.clipboard.writeText(csv);
+                          } else {
+                            const ta = document.createElement('textarea');
+                            ta.value = csv;
+                            ta.setAttribute('readonly', '');
+                            ta.style.position = 'absolute';
+                            ta.style.left = '-9999px';
+                            document.body.appendChild(ta);
+                            ta.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(ta);
+                          }
+                        } catch { /* ignore */ }
                         toast.success(`Copied ${result.count} uncalled numbers to clipboard`);
                       }}>
                         <Download className="h-4 w-4 mr-2" />

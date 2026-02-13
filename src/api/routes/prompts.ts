@@ -61,12 +61,16 @@ export async function registerPromptRoutes(server: FastifyInstance, ctx: ApiCont
       return reply.status(404).send({ error: 'Not Found', message: 'Audio file not found' });
     }
 
-    const ext = path.extname(prompt.filePath).toLowerCase();
+    // Prefer high-quality WAV for browser playback if available
+    const hqPath = prompt.filePath.replace(/\.[^/.]+$/, '_hq.wav');
+    const servePath = fs.existsSync(hqPath) ? hqPath : prompt.filePath;
+
+    const ext = path.extname(servePath).toLowerCase();
     const contentType = ext === '.mp3' ? 'audio/mpeg' :
                        ext === '.wav' ? 'audio/wav' :
                        ext === '.ogg' ? 'audio/ogg' : 'audio/mpeg';
 
-    const stream = fs.createReadStream(prompt.filePath);
+    const stream = fs.createReadStream(servePath);
     reply.header('Content-Type', contentType);
     reply.header('Accept-Ranges', 'bytes');
     return reply.send(stream);

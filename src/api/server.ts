@@ -431,13 +431,18 @@ export async function createApiServer(
     }
 
     const audioDir = process.env.AUDIO_PATH || './audio';
+    const hqWavPath = path.join(audioDir, `${id}_hq.wav`);
     const wavPath = path.join(audioDir, `${id}.wav`);
     const mp3Path = path.join(audioDir, `${id}.mp3`);
 
     let filePath = '';
     let contentType = '';
 
-    if (fs.existsSync(wavPath)) {
+    // Prefer high-quality WAV for browser preview, fall back to 8kHz or MP3
+    if (fs.existsSync(hqWavPath)) {
+      filePath = hqWavPath;
+      contentType = 'audio/wav';
+    } else if (fs.existsSync(wavPath)) {
       filePath = wavPath;
       contentType = 'audio/wav';
     } else if (fs.existsSync(mp3Path)) {
@@ -509,13 +514,18 @@ export async function createApiServer(
       }
 
       const audioDir = process.env.AUDIO_PATH || './audio';
+      const hqWavPath = path.join(audioDir, `${id}_hq.wav`);
       const wavPath = path.join(audioDir, `${id}.wav`);
       const mp3Path = path.join(audioDir, `${id}.mp3`);
 
       let filePath = '';
       let contentType = '';
 
-      if (fs.existsSync(wavPath)) {
+      // Prefer high-quality WAV for browser preview, fall back to 8kHz or MP3
+      if (fs.existsSync(hqWavPath)) {
+        filePath = hqWavPath;
+        contentType = 'audio/wav';
+      } else if (fs.existsSync(wavPath)) {
         filePath = wavPath;
         contentType = 'audio/wav';
       } else if (fs.existsSync(mp3Path)) {

@@ -66,33 +66,33 @@ interface ExtensionDialogProps {
 function SipDetailsCard({ sipDetails, extensionName }: { sipDetails: SipDetails; extensionName: string }) {
   const [copied, setCopied] = useState<string | null>(null);
 
+  const copyText = async (text: string) => {
+    // Try Clipboard API first — works in modern browsers even on HTTP with user gestures
+    if (navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return;
+      } catch {
+        // Fall through to execCommand fallback
+      }
+    }
+    // Fallback: append textarea inside the dialog to avoid Radix focus trap stealing focus
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.setAttribute('readonly', '');
+    textArea.style.position = 'absolute';
+    textArea.style.left = '-9999px';
+    textArea.style.opacity = '0';
+    const target = document.querySelector('[role="dialog"]') || document.body;
+    target.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    target.removeChild(textArea);
+  };
+
   const copyToClipboard = async (text: string, field: string) => {
     try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-      } else {
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-
-        // Ensure element is part of DOM and selectable but invisible
-        textArea.style.position = 'fixed';
-        textArea.style.left = '0';
-        textArea.style.top = '0';
-        textArea.style.opacity = '0';
-        textArea.style.pointerEvents = 'none';
-
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        textArea.setSelectionRange(0, 99999); // For mobile devices
-
-        try {
-          const successful = document.execCommand('copy');
-          if (!successful) throw new Error('Copy failed');
-        } finally {
-          document.body.removeChild(textArea);
-        }
-      }
+      await copyText(text);
       setCopied(field);
       toast.success(`${field} copied to clipboard`);
       setTimeout(() => setCopied(null), 2000);
@@ -102,36 +102,9 @@ function SipDetailsCard({ sipDetails, extensionName }: { sipDetails: SipDetails;
   };
 
   const copyAll = async () => {
-    const allDetails = `Server: ${sipDetails.server}
-Port: ${sipDetails.port}
-Username: ${sipDetails.username}
-Password: ${sipDetails.password}`;
+    const allDetails = `Server: ${sipDetails.server}\nPort: ${sipDetails.port}\nUsername: ${sipDetails.username}\nPassword: ${sipDetails.password}`;
     try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(allDetails);
-      } else {
-        const textArea = document.createElement('textarea');
-        textArea.value = allDetails;
-
-        // Ensure element is part of DOM and selectable but invisible
-        textArea.style.position = 'fixed';
-        textArea.style.left = '0';
-        textArea.style.top = '0';
-        textArea.style.opacity = '0';
-        textArea.style.pointerEvents = 'none';
-
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        textArea.setSelectionRange(0, 99999); // For mobile devices
-
-        try {
-          const successful = document.execCommand('copy');
-          if (!successful) throw new Error('Copy failed');
-        } finally {
-          document.body.removeChild(textArea);
-        }
-      }
+      await copyText(allDetails);
       toast.success('All SIP details copied to clipboard');
     } catch (err) {
       toast.error('Failed to copy to clipboard');

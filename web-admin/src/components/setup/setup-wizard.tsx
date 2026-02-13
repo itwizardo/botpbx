@@ -222,9 +222,27 @@ export function SetupWizard({ open, onOpenChange }: SetupWizardProps) {
     setStep('outbound');
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard');
+  const copyToClipboard = async (text: string) => {
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.setAttribute('readonly', '');
+        textArea.style.position = 'absolute';
+        textArea.style.left = '-9999px';
+        textArea.style.opacity = '0';
+        const target = document.querySelector('[role="dialog"]') || document.body;
+        target.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        target.removeChild(textArea);
+      }
+      toast.success('Copied to clipboard');
+    } catch {
+      toast.error('Failed to copy to clipboard');
+    }
   };
 
   const renderExtensionStep = () => (

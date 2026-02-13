@@ -44,7 +44,7 @@ export class AudioService {
 
   /**
    * Convert audio to Asterisk-compatible format
-   * Creates WAV (8kHz, 16-bit, mono, PCM) and SLN (raw) files
+   * Creates WAV (8kHz), SLN (8kHz raw), and SLN16 (16kHz raw) using SoX high-quality resampler
    */
   async convertToAsteriskFormat(inputPath: string): Promise<ServiceResult<AudioConversionResult>> {
     if (!fs.existsSync(inputPath)) {
@@ -57,6 +57,7 @@ export class AudioService {
 
     const wavPath = path.join(outputDir, `${baseName}.wav`);
     const slnPath = path.join(outputDir, `${baseName}.sln`);
+    const sln16Path = path.join(outputDir, `${baseName}.sln16`);
 
     try {
       // If input is already WAV, we need to use a temp file to avoid read/write conflict
@@ -71,7 +72,7 @@ export class AudioService {
           const [sampleRate, channels] = stdout.trim().split(',');
 
           if (sampleRate === '8000' && channels === '1') {
-            // Already in correct format, just create SLN
+            // Already in correct format, just create SLN and SLN16
             logger.info(`WAV already in Asterisk format (8kHz mono): ${inputPath}`);
 
             // Create SLN from the existing WAV
@@ -79,6 +80,12 @@ export class AudioService {
               `ffmpeg -i "${inputPath}" -f s16le -y "${slnPath}" 2>/dev/null`
             );
             logger.info(`Created SLN: ${slnPath}`);
+
+            // Create SLN16 (upsample 8kHz to 16kHz with SoX resampler)
+            await execAsync(
+              `ffmpeg -i "${inputPath}" -af aresample=resampler=soxr -ar 16000 -ac 1 -f s16le -y "${sln16Path}" 2>/dev/null`
+            );
+            logger.info(`Created SLN16: ${sln16Path}`);
 
             return {
               success: true,
@@ -100,17 +107,23 @@ export class AudioService {
         sourceForConversion = tempPath;
       }
 
-      // Convert to WAV (8kHz, 16-bit, mono, PCM)
+      // Convert to WAV (8kHz, 16-bit, mono, PCM) using SoX high-quality resampler
       await execAsync(
-        `ffmpeg -i "${sourceForConversion}" -ar 8000 -ac 1 -acodec pcm_s16le -y "${wavPath}" 2>/dev/null`
+        `ffmpeg -i "${sourceForConversion}" -af aresample=resampler=soxr -ar 8000 -ac 1 -acodec pcm_s16le -y "${wavPath}" 2>/dev/null`
       );
-      logger.info(`Converted to WAV: ${wavPath}`);
+      logger.info(`Converted to WAV (8kHz soxr): ${wavPath}`);
 
       // Convert to SLN (raw signed linear, 8kHz, 16-bit, mono)
       await execAsync(
         `ffmpeg -i "${wavPath}" -f s16le -y "${slnPath}" 2>/dev/null`
       );
       logger.info(`Converted to SLN: ${slnPath}`);
+
+      // Convert to SLN16 (raw signed linear, 16kHz, 16-bit, mono) for wideband channels
+      await execAsync(
+        `ffmpeg -i "${sourceForConversion}" -af aresample=resampler=soxr -ar 16000 -ac 1 -f s16le -y "${sln16Path}" 2>/dev/null`
+      );
+      logger.info(`Converted to SLN16 (16kHz soxr): ${sln16Path}`);
 
       // Clean up temp file if we created one
       if (sourceForConversion !== inputPath && fs.existsSync(sourceForConversion)) {
@@ -218,7 +231,7 @@ export class AudioService {
    * Delete all audio files for a prompt
    */
   deleteAudio(promptId: string, subdir: 'prompts' | 'uploads' | 'system' = 'prompts'): boolean {
-    const formats = ['mp3', 'wav', 'sln', 'ogg', 'm4a'];
+    const formats = ['mp3', 'wav', 'sln', 'sln16', 'raw', 'ogg', 'm4a'];
     let deleted = false;
 
     for (const format of formats) {
