@@ -53,7 +53,7 @@ export function TwilioWizard({ open, onOpenChange, onSuccess }: TwilioWizardProp
   const [authToken, setAuthToken] = useState('');
   const [trunkName, setTrunkName] = useState('Twilio SIP Trunk');
   const [selectedNumbers, setSelectedNumbers] = useState<string[]>([]);
-  const [enableStirShaken, setEnableStirShaken] = useState(true);
+  const [enableStirShaken, setEnableStirShaken] = useState(false);
   const [useTls, setUseTls] = useState(true);
 
   // Fetched data
@@ -71,7 +71,7 @@ export function TwilioWizard({ open, onOpenChange, onSuccess }: TwilioWizardProp
       setAuthToken('');
       setTrunkName('Twilio SIP Trunk');
       setSelectedNumbers([]);
-      setEnableStirShaken(true);
+      setEnableStirShaken(false);
       setUseTls(true);
       setAccountName(null);
       setPhoneNumbers([]);

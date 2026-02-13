@@ -309,10 +309,13 @@ password=${trunk.password}
 
 `;
 
-    // AOR (Address of Record) - add transport=tls for TLS ports
+    // AOR (Address of Record)
+    // Use hostname (not resolved IP) so the Request-URI contains the domain.
+    // Providers like Twilio need the domain in the URI to route calls correctly.
+    const aorHost = trunk.host;
     const aorContact = trunk.port === 5061
-      ? `sip:${hostIP}:${trunk.port};transport=tls`
-      : `sip:${hostIP}:${trunk.port}`;
+      ? `sip:${aorHost}:${trunk.port};transport=tls`
+      : `sip:${aorHost}:${trunk.port}`;
     config += `[${trunkName}-aor]
 type=aor
 contact=${aorContact}

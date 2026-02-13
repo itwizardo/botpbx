@@ -77,8 +77,9 @@ export class SipTestService {
       }
     } catch (error: any) {
       result.error = error.message;
-      // If DNS resolved but port failed, might still be OK (UDP is tricky to test)
-      if (result.dnsOk) {
+      // For UDP ports: if DNS resolved but port check failed, might still be OK (UDP is tricky)
+      // For TCP/TLS ports (5061): TCP connect is definitive, so don't mask failures
+      if (result.dnsOk && port !== 5061) {
         result.success = true;
         result.portOk = true; // Assume OK since UDP testing is unreliable
         result.error = 'Note: UDP port test inconclusive, but DNS resolved. Check Asterisk registration.';
@@ -107,10 +108,47 @@ export class SipTestService {
   }
 
   /**
-   * Check if port is reachable via UDP (SIP uses UDP by default)
-   * We send a simple SIP OPTIONS and check if we get any response or no ICMP unreachable
+   * Check if port is reachable.
+   * For TLS ports (5061), uses TCP connect which gives a definitive result.
+   * For UDP ports, sends a SIP OPTIONS probe (timeout = probably open).
    */
   private checkPort(host: string, port: number, timeout: number = 3000): Promise<void> {
+    if (port === 5061) {
+      return this.checkPortTcp(host, port, timeout);
+    }
+    return this.checkPortUdp(host, port, timeout);
+  }
+
+  /**
+   * TCP port check — connect and immediately close.
+   * A successful TCP handshake means the port is open.
+   */
+  private checkPortTcp(host: string, port: number, timeout: number = 3000): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const socket = net.connect({ host, port, timeout });
+
+      socket.on('connect', () => {
+        socket.destroy();
+        resolve();
+      });
+
+      socket.on('timeout', () => {
+        socket.destroy();
+        reject(new Error(`TCP port ${port} connection timed out`));
+      });
+
+      socket.on('error', (error: any) => {
+        socket.destroy();
+        reject(new Error(`TCP port ${port} check failed: ${error.message}`));
+      });
+    });
+  }
+
+  /**
+   * UDP port check — send a SIP OPTIONS probe.
+   * No ICMP unreachable (timeout) is treated as "probably open".
+   */
+  private checkPortUdp(host: string, port: number, timeout: number = 3000): Promise<void> {
     return new Promise((resolve, reject) => {
       const socket = dgram.createSocket('udp4');
 
@@ -152,7 +190,8 @@ export class SipTestService {
   }
 
   /**
-   * Send SIP OPTIONS request and check response
+   * Send SIP OPTIONS request and check response.
+   * For TLS ports (5061), we can't send plain UDP — TCP port connectivity is sufficient.
    */
   private async sendSipOptions(
     ip: string,
@@ -161,6 +200,16 @@ export class SipTestService {
     username?: string,
     fromDomain?: string
   ): Promise<{ success: boolean; responseCode?: number; responseText?: string }> {
+    // TLS ports require a TLS handshake that we can't easily do from Node without certs.
+    // TCP connectivity already proved the port is open, so treat that as success.
+    if (port === 5061) {
+      return {
+        success: true,
+        responseCode: 200,
+        responseText: 'TLS port open (TCP verified) — use Asterisk CLI to test SIP signaling',
+      };
+    }
+
     return new Promise((resolve) => {
       const callId = this.generateCallId();
       const branch = this.generateBranch();

@@ -179,16 +179,15 @@ export default function TrunksPage() {
             <HelpCircle className="h-4 w-4 mr-2" />
             Help
           </Button>
-          <Button variant="outline" disabled className="relative">
+          <Button variant="outline" onClick={() => setTwilioWizardOpen(true)} className="relative">
             <Image
               src="/twilio-logo.png"
               alt="Twilio"
               width={16}
               height={16}
-              className="mr-2 object-contain opacity-50"
+              className="mr-2 object-contain"
             />
             Connect Twilio
-            <Badge variant="secondary" className="ml-2 text-xs">Coming Soon</Badge>
           </Button>
           <Button onClick={handleCreate}>
             <Plus className="h-4 w-4 mr-2" />

@@ -242,11 +242,17 @@ export class TwilioService {
     try {
       const client = Twilio(config.accountSid, config.authToken);
 
+      // Generate a unique termination domain name from the friendly name.
+      // Twilio requires a Termination SIP URI for outbound calls to work.
+      const domainSlug = friendlyName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+      const domainName = `${domainSlug}.pstn.twilio.com`;
+
       const trunk = await client.trunking.v1.trunks.create({
         friendlyName,
+        domainName,
       });
 
-      dbLogger.info(`Created Twilio SIP trunk: ${trunk.friendlyName} (${trunk.sid})`);
+      dbLogger.info(`Created Twilio SIP trunk: ${trunk.friendlyName} (${trunk.sid}), termination URI: ${trunk.domainName}`);
 
       return {
         sid: trunk.sid,
@@ -474,6 +480,7 @@ export class TwilioService {
     options?: {
       useTls?: boolean;
       fromDomain?: string;
+      terminationDomain?: string;
     }
   ): {
     host: string;
@@ -485,7 +492,8 @@ export class TwilioService {
     register: boolean;
   } {
     const port = options?.useTls ? 5061 : 5060;
-    const host = `${config.accountSid}.pstn.twilio.com`;
+    // Use the trunk's Termination SIP URI if available, otherwise fall back to account SID
+    const host = options?.terminationDomain || `${config.accountSid}.pstn.twilio.com`;
 
     return {
       host,
@@ -494,7 +502,7 @@ export class TwilioService {
       password: config.authToken,
       fromDomain: options?.fromDomain || host,
       codecs: 'ulaw,alaw,opus',
-      register: false, // Twilio uses credential-based auth, not registration
+      register: false, // Twilio uses IP ACL auth, not registration
     };
   }
 }

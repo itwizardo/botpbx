@@ -241,11 +241,12 @@ export function registerTwilioRoutes(server: FastifyInstance, ctx: ApiContext): 
           credListSid = credList.sid;
           request.log.info(`Created Credential List: ${credList.sid}`);
 
-          // Add credentials using AccountSID as username and AuthToken as password
+          // Add credentials — Twilio limits usernames to 32 chars, so truncate AccountSID if needed
+          const credUsername = accountSid.length > 32 ? accountSid.substring(0, 32) : accountSid;
           await twilioService.addCredentialToList(
             { accountSid, authToken },
             credList.sid,
-            accountSid,
+            credUsername,
             authToken
           );
           request.log.info(`Added credentials to list`);
@@ -304,7 +305,7 @@ export function registerTwilioRoutes(server: FastifyInstance, ctx: ApiContext): 
       const asteriskConfig = twilioService.generateAsteriskTrunkConfig(
         { accountSid, authToken },
         name,
-        { useTls: useTls !== false }
+        { useTls: useTls !== false, terminationDomain: twilioTrunk?.domainName || undefined }
       );
 
       // Use first selected number as caller ID (fromUser)
@@ -324,8 +325,8 @@ export function registerTwilioRoutes(server: FastifyInstance, ctx: ApiContext): 
         codecs: asteriskConfig.codecs,
         enabled: true,
         register: false, // Twilio doesn't require registration
-        stirShakenEnabled: enableStirShaken !== false,
-        stirShakenAttest: enableStirShaken !== false ? 'A' : null,
+        stirShakenEnabled: enableStirShaken === true,
+        stirShakenAttest: enableStirShaken === true ? 'A' : null,
         stirShakenProfile: null,
       });
 
