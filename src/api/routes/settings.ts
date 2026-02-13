@@ -981,17 +981,42 @@ export function registerSettingsRoutes(server: FastifyInstance, ctx: ApiContext)
     // Key is valid, save it
     await ctx.settingsRepo.set(settingKey, apiKey);
 
-    // Refresh STT providers if this is an STT key
-    if (type === 'stt' && ctx.transcriptionService) {
+    // Refresh STT providers if this key is used for STT
+    // OpenAI key is used for Whisper STT even though frontend sends type='llm'
+    if ((type === 'stt' || provider === 'openai') && ctx.transcriptionService) {
       await ctx.transcriptionService.refreshProviders();
     }
 
     // Refresh TTS service if this is a TTS key
-    if (type === 'tts') {
+    if (type === 'tts' || provider === 'openai' || provider === 'deepgram') {
       if (provider === 'deepgram') ctx.ttsService.setDeepgramApiKey(apiKey);
       if (provider === 'cartesia') ctx.ttsService.setCartesiaApiKey(apiKey);
       if (provider === 'openai') ctx.ttsService.setOpenAIApiKey(apiKey);
       if (provider === 'google') ctx.ttsService.setGoogleApiKey(apiKey);
+    }
+
+    // Lazy-initialize AudioSocket stack when OpenAI key is added and not yet running
+    if (provider === 'openai' && !ctx.audioSocketServer) {
+      try {
+        const { OpenAIRealtimeService } = await import('../../services/openaiRealtimeService');
+        const { FlowExecutionService } = await import('../../services/flowExecutionService');
+        const { AudioSocketServer } = await import('../../asterisk/audioSocketServer');
+        const OpenAI = (await import('openai')).default;
+
+        const realtimeService = new OpenAIRealtimeService(apiKey);
+        const flowService = new FlowExecutionService(ctx.db);
+        flowService.setOpenAI(new OpenAI({ apiKey }));
+
+        const audioSocket = new AudioSocketServer(9092);
+        audioSocket.setRealtimeService(realtimeService);
+        audioSocket.setFlowService(flowService);
+        audioSocket.start();
+
+        ctx.audioSocketServer = audioSocket;
+        server.log.info('AudioSocket server started on port 9092 (lazy init)');
+      } catch (err) {
+        server.log.error({ err }, 'Failed to lazy-initialize AudioSocket server');
+      }
     }
 
     return {
@@ -1102,6 +1127,18 @@ export function registerSettingsRoutes(server: FastifyInstance, ctx: ApiContext)
     }
 
     await ctx.settingsRepo.delete(settingKey);
+
+    // Refresh STT providers when removing a key used for STT
+    if ((type === 'stt' || provider === 'openai') && ctx.transcriptionService) {
+      await ctx.transcriptionService.refreshProviders();
+    }
+
+    // Stop AudioSocket when OpenAI key is removed
+    if (provider === 'openai' && ctx.audioSocketServer) {
+      ctx.audioSocketServer.stop();
+      ctx.audioSocketServer = null;
+      server.log.info('AudioSocket server stopped (OpenAI key removed)');
+    }
 
     return { success: true };
   });

@@ -22,6 +22,25 @@ interface AddMemberBody {
   role?: string;
 }
 
+// Transform backend TeamMember to frontend-expected shape:
+// Frontend expects: id=userId (number), role=userRole, teamRole=membership role
+function toFrontendMember(m: { userId: number; role: string; userRole?: string; joinedAt: string; username?: string; displayName?: string | null; email?: string | null; phone?: string | null; avatarUrl?: string | null; enabled?: boolean; lastLoginAt?: number | null; department?: string | null }) {
+  return {
+    id: m.userId,
+    username: m.username || '',
+    displayName: m.displayName || null,
+    email: m.email || null,
+    phone: m.phone || null,
+    department: m.department || null,
+    avatarUrl: m.avatarUrl || null,
+    role: m.userRole || 'viewer',
+    enabled: m.enabled ?? true,
+    lastLoginAt: m.lastLoginAt || null,
+    teamRole: m.role,
+    joinedAt: m.joinedAt,
+  };
+}
+
 export function registerTeamRoutes(server: FastifyInstance, ctx: ApiContext): void {
   // Get all teams with members
   server.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
@@ -31,12 +50,12 @@ export function registerTeamRoutes(server: FastifyInstance, ctx: ApiContext): vo
       const unassignedUsers = await ctx.teamRepo.getUnassignedUsers();
 
       return {
-        success: true,
-        data: {
-          teams,
-          unassignedUsers,
-          stats,
-        },
+        teams: teams.map(t => ({
+          ...t,
+          members: t.members.map(toFrontendMember),
+        })),
+        unassignedUsers: unassignedUsers.map(toFrontendMember),
+        stats,
       };
     } catch (error) {
       request.log.error(error, 'Failed to get teams');
