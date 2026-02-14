@@ -186,6 +186,7 @@ export class CampaignContactRepository {
    */
   async findPendingForDialing(campaignId: string, limit: number, retryDelayMinutes: number, maxAttempts: number): Promise<CampaignContact[]> {
     const retryDelaySecs = retryDelayMinutes * 60;
+    const now = Math.floor(Date.now() / 1000);
 
     // Get contacts that are:
     // 1. Status is 'pending' (never tried), OR
@@ -198,12 +199,12 @@ export class CampaignContactRepository {
          OR (
            status IN ('no_answer', 'busy')
            AND attempts < $2
-           AND (last_attempt_at IS NULL OR last_attempt_at + INTERVAL '${retryDelaySecs} seconds' < NOW())
+           AND (last_attempt_at IS NULL OR last_attempt_at + ${retryDelaySecs} < $4)
          )
        )
        ORDER BY attempts ASC, created_at ASC
        LIMIT $3`,
-      [campaignId, maxAttempts, limit]
+      [campaignId, maxAttempts, limit, now]
     );
 
     return rows.map(rowToContact);
@@ -230,11 +231,13 @@ export class CampaignContactRepository {
 
     if (status === 'dialing') {
       updates.push('attempts = attempts + 1');
-      updates.push('last_attempt_at = NOW()');
+      updates.push(`last_attempt_at = $${paramIndex++}`);
+      values.push(Math.floor(Date.now() / 1000));
     }
 
     if (status === 'answered' || status === 'press1' || status === 'connected') {
-      updates.push('answered_at = NOW()');
+      updates.push(`answered_at = $${paramIndex++}`);
+      values.push(Math.floor(Date.now() / 1000));
     }
 
     if (callLogId) {

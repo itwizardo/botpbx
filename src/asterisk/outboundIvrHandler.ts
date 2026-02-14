@@ -174,31 +174,38 @@ export class OutboundIvrHandler {
     let optionsPressed: string[] = [];
     let recordingFilePath: string | null = null;
 
-    // Start call recording if enabled
-    if (this.settingsRepo && this.recordingRepo) {
-      const recordingEnabled = (await this.settingsRepo.get('call_recording_enabled')) === 'true';
-      if (recordingEnabled) {
-        try {
-          // Generate unique filename: YYYYMMDD-HHMMSS-uniqueid.wav
-          const now = new Date();
-          const dateStr = now.toISOString().replace(/[-:T]/g, '').slice(0, 14);
-          const filename = `${dateStr}-${session.uniqueId}.wav`;
-          recordingFilePath = path.join(this.recordingsPath, filename);
+    // Setup call recording - MixMonitor is started in the dialplan before AGI
+    if (this.recordingRepo) {
+      try {
+        // Check if MixMonitor was started in the dialplan (RECORDING_FILE set)
+        const dialplanRecordingFile = await agi.getVariable('RECORDING_FILE');
+        if (dialplanRecordingFile) {
+          recordingFilePath = dialplanRecordingFile;
+          outboundLogger.info(`Using dialplan recording: ${dialplanRecordingFile}`);
+        } else if (this.settingsRepo) {
+          // Fallback: start MixMonitor from AGI if not started in dialplan
+          const recordingEnabled = (await this.settingsRepo.get('call_recording_enabled')) === 'true';
+          if (recordingEnabled) {
+            const now = new Date();
+            const dateStr = now.toISOString().replace(/[-:T]/g, '').slice(0, 14);
+            const filename = `${dateStr}-${session.uniqueId}.wav`;
+            recordingFilePath = path.join(this.recordingsPath, filename);
+            await agi.exec('MixMonitor', recordingFilePath);
+            outboundLogger.info(`Recording started from AGI: ${filename}`);
+          }
+        }
 
-          // Start MixMonitor to record both sides of the call
-          await agi.exec('MixMonitor', `${recordingFilePath},ab`);
-          outboundLogger.info(`Recording started: ${filename}`);
-
-          // Create recording entry in database
+        // Create recording entry in database
+        if (recordingFilePath) {
           await this.recordingRepo.create({
             callLogId: callLog.id,
             filePath: recordingFilePath,
-            durationSeconds: 0, // Will be updated later
+            durationSeconds: 0,
           });
-        } catch (recError) {
-          outboundLogger.error('Failed to start recording:', recError);
-          // Continue without recording
         }
+      } catch (recError) {
+        outboundLogger.error('Failed to setup recording:', recError);
+        // Continue without recording
       }
     }
 

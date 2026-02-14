@@ -22,6 +22,9 @@ export function registerRecordingRoutes(server: FastifyInstance, ctx: ApiContext
 
     return {
       recordings,
+      total,
+      page: Math.floor(offsetNum / limitNum) + 1,
+      pageSize: limitNum,
       pagination: {
         limit: limitNum,
         offset: offsetNum,

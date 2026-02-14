@@ -334,6 +334,107 @@ async function main(): Promise<void> {
       }
     });
 
+    // Handle AI agent call end - create call log and complete recording for AI test calls
+    agiServer.on('ai-call-end', async (agi, session) => {
+      try {
+        const duration = parseInt(await agi.getVariable('CALL_DURATION') || '0', 10);
+        const recordingFile = await agi.getVariable('RECORDING_FILE');
+        const agentId = await agi.getVariable('AGENT_ID');
+
+        logger.info(`AI call end: ${session.uniqueId}, duration=${duration}s, recording=${recordingFile}`);
+
+        // Create or find call log
+        let callLog = await callLogRepo.findByUniqueId(session.uniqueId);
+        if (!callLog) {
+          callLog = await callLogRepo.create({
+            callerId: session.callerId || 'ai-test',
+            did: session.dnid || session.extension || '',
+            ivrMenuId: null,
+            optionsPressed: '',
+            finalDestination: agentId ? `ai-agent:${agentId}` : 'ai-agent-test',
+            durationSeconds: duration,
+            disposition: 'AI_TEST',
+            uniqueId: session.uniqueId,
+          });
+          logger.info(`Created call log for AI test call: ${callLog.id}`);
+        } else {
+          await callLogRepo.update(callLog.id, { durationSeconds: duration });
+        }
+
+        // Create and complete recording entry
+        if (recordingFile) {
+          const fs = await import('fs');
+          let fileSize: number | undefined;
+          try {
+            const stats = await fs.promises.stat(recordingFile);
+            fileSize = stats.size;
+          } catch {
+            // File may not exist yet
+          }
+
+          // Check if recording entry already exists
+          let recording = await callRecordingRepo.findByUniqueId(session.uniqueId);
+          if (!recording) {
+            recording = await callRecordingRepo.create({
+              callLogId: callLog.id,
+              filePath: recordingFile,
+              uniqueId: session.uniqueId,
+            });
+          }
+
+          await callRecordingRepo.complete(recording.id, duration, fileSize);
+          logger.info(`AI call recording completed: ${recordingFile}, size=${fileSize}`);
+        }
+      } catch (error) {
+        logger.error('AI call end error:', error);
+      }
+    });
+
+    // Handle trunk test call end - create call log and recording
+    agiServer.on('test-call-end', async (agi, session) => {
+      try {
+        const duration = parseInt(await agi.getVariable('CALL_DURATION') || '0', 10);
+        const recordingFile = await agi.getVariable('RECORDING_FILE');
+
+        logger.info(`Test call end: ${session.uniqueId}, duration=${duration}s, recording=${recordingFile}`);
+
+        // Create call log
+        const callLog = await callLogRepo.create({
+          callerId: session.callerId || 'trunk-test',
+          did: session.dnid || session.extension || '',
+          ivrMenuId: null,
+          optionsPressed: '',
+          finalDestination: 'trunk-test',
+          durationSeconds: duration,
+          disposition: 'TRUNK_TEST',
+          uniqueId: session.uniqueId,
+        });
+
+        // Create and complete recording entry
+        if (recordingFile) {
+          const fs = await import('fs');
+          let fileSize: number | undefined;
+          try {
+            const stats = await fs.promises.stat(recordingFile);
+            fileSize = stats.size;
+          } catch {
+            // File may not exist yet
+          }
+
+          const recording = await callRecordingRepo.create({
+            callLogId: callLog.id,
+            filePath: recordingFile,
+            uniqueId: session.uniqueId,
+          });
+
+          await callRecordingRepo.complete(recording.id, duration, fileSize);
+          logger.info(`Test call recording completed: ${recordingFile}, size=${fileSize}`);
+        }
+      } catch (error) {
+        logger.error('Test call end error:', error);
+      }
+    });
+
     // Handle AI agent calls with full conversation
     // Uses OpenAI Realtime API for low-latency streaming when available
     // Falls back to file-based STT → LLM → TTS for other providers

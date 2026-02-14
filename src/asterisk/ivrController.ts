@@ -115,31 +115,40 @@ export class IVRController {
     callState.callLogId = callLog.id;
     this.activeCalls.set(session.uniqueId, callState);
 
-    // Start call recording if enabled
+    // Setup call recording - MixMonitor is started in the dialplan before AGI
+    // to ensure all audio (including AGI-streamed prompts) is captured.
+    // We just need to create the DB entry here.
     if (this.recordingRepo) {
-      const recordingEnabled = (await this.settingsRepo.get('call_recording_enabled')) === 'true';
-      if (recordingEnabled) {
-        try {
-          // Generate unique filename: YYYYMMDD-HHMMSS-uniqueid.wav
-          const now = new Date();
-          const dateStr = now.toISOString().replace(/[-:T]/g, '').slice(0, 14);
-          const filename = `${dateStr}-${session.uniqueId}.wav`;
-          callState.recordingFilePath = path.join(this.recordingsPath, filename);
+      try {
+        // Check if MixMonitor was started in the dialplan (RECORDING_FILE set)
+        const dialplanRecordingFile = await agi.getVariable('RECORDING_FILE');
+        if (dialplanRecordingFile) {
+          callState.recordingFilePath = dialplanRecordingFile;
+          agiLogger.info(`Using dialplan recording: ${dialplanRecordingFile}`);
+        } else {
+          // Fallback: start MixMonitor from AGI if not started in dialplan
+          const recordingEnabled = (await this.settingsRepo.get('call_recording_enabled')) === 'true';
+          if (recordingEnabled) {
+            const now = new Date();
+            const dateStr = now.toISOString().replace(/[-:T]/g, '').slice(0, 14);
+            const filename = `${dateStr}-${session.uniqueId}.wav`;
+            callState.recordingFilePath = path.join(this.recordingsPath, filename);
+            await agi.exec('MixMonitor', callState.recordingFilePath);
+            agiLogger.info(`Recording started from AGI: ${filename}`);
+          }
+        }
 
-          // Start MixMonitor to record both sides of the call
-          await agi.exec('MixMonitor', `${callState.recordingFilePath},ab`);
-          agiLogger.info(`Recording started: ${filename}`);
-
-          // Create recording entry in database
+        // Create recording entry in database
+        if (callState.recordingFilePath) {
           await this.recordingRepo.create({
             callLogId: callLog.id,
             filePath: callState.recordingFilePath,
             uniqueId: session.uniqueId,
           });
-        } catch (recError) {
-          agiLogger.error('Failed to start recording:', recError);
-          // Continue without recording
         }
+      } catch (recError) {
+        agiLogger.error('Failed to setup recording:', recError);
+        // Continue without recording
       }
     }
 

@@ -289,10 +289,11 @@ export class VoicemailRepository {
   }
 
   async deleteOldVoicemails(daysOld: number): Promise<number> {
+    const cutoff = Math.floor(Date.now() / 1000) - (daysOld * 86400);
     const result = await this.db.run(`
       DELETE FROM voicemails
-      WHERE created_at < NOW() - INTERVAL '${daysOld} days'
-    `);
+      WHERE created_at < $1
+    `, [cutoff]);
     return result.rowCount;
   }
 

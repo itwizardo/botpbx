@@ -156,11 +156,12 @@ export class RecordingRepository {
     fileSize: number;
     durationSeconds: number;
   }): Promise<boolean> {
+    const completedAt = Math.floor(Date.now() / 1000);
     const result = await this.db.run(
       `UPDATE call_recordings
-       SET status = 'completed', file_size = $1, duration_seconds = $2, completed_at = NOW()
-       WHERE id = $3`,
-      [data.fileSize, data.durationSeconds, id]
+       SET status = 'completed', file_size = $1, duration_seconds = $2, completed_at = $3
+       WHERE id = $4`,
+      [data.fileSize, data.durationSeconds, completedAt, id]
     );
 
     if (result.rowCount > 0) {
@@ -170,9 +171,10 @@ export class RecordingRepository {
   }
 
   async markFailed(id: string): Promise<boolean> {
+    const completedAt = Math.floor(Date.now() / 1000);
     const result = await this.db.run(
-      `UPDATE call_recordings SET status = 'failed', completed_at = NOW() WHERE id = $1`,
-      [id]
+      `UPDATE call_recordings SET status = 'failed', completed_at = $1 WHERE id = $2`,
+      [completedAt, id]
     );
     return result.rowCount > 0;
   }
@@ -191,8 +193,10 @@ export class RecordingRepository {
   }
 
   async deleteOlderThan(days: number): Promise<number> {
+    const cutoff = Math.floor(Date.now() / 1000) - (days * 86400);
     const result = await this.db.run(
-      `DELETE FROM call_recordings WHERE started_at < NOW() - INTERVAL '${days} days'`
+      `DELETE FROM call_recordings WHERE started_at < $1`,
+      [cutoff]
     );
     if (result.rowCount > 0) {
       dbLogger.info(`Deleted ${result.rowCount} old recordings from database`);

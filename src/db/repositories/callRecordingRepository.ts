@@ -124,11 +124,12 @@ export class CallRecordingRepository {
   }
 
   async complete(id: string, durationSeconds: number, fileSize?: number): Promise<void> {
+    const completedAt = Math.floor(Date.now() / 1000);
     await this.db.run(`
       UPDATE call_recordings
-      SET status = 'completed', duration_seconds = $1, file_size = $2, completed_at = NOW()
-      WHERE id = $3
-    `, [durationSeconds, fileSize || null, id]);
+      SET status = 'completed', duration_seconds = $1, file_size = $2, completed_at = $3
+      WHERE id = $4
+    `, [durationSeconds, fileSize || null, completedAt, id]);
   }
 
   async delete(id: string): Promise<boolean> {

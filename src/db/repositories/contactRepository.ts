@@ -206,9 +206,9 @@ export class ContactRepository {
     const existing = await this.findById(id, tenantId);
     if (!existing) return null;
 
-    const fields: string[] = ['updated_at = NOW()'];
-    const values: any[] = [];
-    let paramIndex = 1;
+    const fields: string[] = [`updated_at = $1`];
+    const values: any[] = [Math.floor(Date.now() / 1000)];
+    let paramIndex = 2;
 
     if (updates.phoneNumber !== undefined) {
       fields.push(`phone_number = $${paramIndex++}`);

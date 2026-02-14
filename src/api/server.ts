@@ -28,6 +28,7 @@ import { AIAnalyticsRepository } from '../db/repositories/aiAnalyticsRepository'
 import { CallSummaryRepository } from '../db/repositories/callSummaryRepository';
 import { AIInsightsRepository } from '../db/repositories/aiInsightsRepository';
 import { TeamRepository } from '../db/repositories/teamRepository';
+import { CallRecordingRepository } from '../db/repositories/callRecordingRepository';
 
 // Local type alias used within this module
 type Permission = PermissionType;
@@ -134,6 +135,7 @@ export interface ApiContext {
   contactGroupRepo: ContactGroupRepository;
   queueAnnouncementService: QueueAnnouncementService | null;
   teamRepo: TeamRepository;
+  callRecordingRepo: CallRecordingRepository;
   // Permission middleware factory
   requirePermission: (permission: Permission) => PermissionMiddleware;
 }
@@ -191,6 +193,7 @@ export async function createApiServer(
   const callSummaryRepo = new CallSummaryRepository(db);
   const aiInsightsRepo = new AIInsightsRepository(db);
   const teamRepo = new TeamRepository(db);
+  const callRecordingRepo = new CallRecordingRepository(db);
 
   // Initialize auth service
   const authService = new AuthService(userRepo, sessionRepo);
@@ -363,6 +366,7 @@ export async function createApiServer(
     contactGroupRepo,
     queueAnnouncementService,
     teamRepo,
+    callRecordingRepo,
     requirePermission: requirePermissionFactory,
   };
 

@@ -93,7 +93,7 @@ export class AIInsightsRepository {
    */
   async create(input: CreateInsightInput): Promise<AIInsight> {
     const id = uuidv4();
-    const now = new Date();
+    const now = Math.floor(Date.now() / 1000);
 
     await this.db.run(`
       INSERT INTO ai_insights (id, insight_type, entity_id, data, confidence, generated_at)
@@ -115,7 +115,7 @@ export class AIInsightsRepository {
       entityId: input.entityId || null,
       data: input.data,
       confidence: input.confidence || null,
-      generatedAt: Math.floor(now.getTime() / 1000),
+      generatedAt: now,
     };
   }
 
@@ -165,10 +165,11 @@ export class AIInsightsRepository {
    * Delete old insights
    */
   async deleteOlderThan(days: number): Promise<number> {
+    const cutoff = Math.floor(Date.now() / 1000) - (days * 86400);
     const result = await this.db.run(`
       DELETE FROM ai_insights
-      WHERE generated_at < NOW() - INTERVAL '${days} days'
-    `);
+      WHERE generated_at < $1
+    `, [cutoff]);
     return result.rowCount;
   }
 
@@ -180,6 +181,7 @@ export class AIInsightsRepository {
    * Get intent distribution from stored insights
    */
   async getIntentDistribution(days = 30): Promise<IntentDistribution[]> {
+    const cutoff = Math.floor(Date.now() / 1000) - (days * 86400);
     const rows = await this.db.all<{
       intent: string;
       count: string;
@@ -189,10 +191,10 @@ export class AIInsightsRepository {
         COUNT(*) as count
       FROM ai_insights
       WHERE insight_type = 'intent'
-        AND generated_at >= NOW() - INTERVAL '${days} days'
+        AND generated_at >= $1
       GROUP BY data->>'intent'
       ORDER BY count DESC
-    `);
+    `, [cutoff]);
 
     const total = rows.reduce((sum, r) => sum + parseInt(r.count, 10), 0);
 
@@ -248,11 +250,12 @@ export class AIInsightsRepository {
       if (suggestedAnswer) data.suggestedAnswer = suggestedAnswer;
       if (category) data.category = category;
 
+      const now = Math.floor(Date.now() / 1000);
       await this.db.run(`
         UPDATE ai_insights
-        SET data = $1, generated_at = NOW()
-        WHERE id = $2
-      `, [JSON.stringify(data), existing.id]);
+        SET data = $1, generated_at = $2
+        WHERE id = $3
+      `, [JSON.stringify(data), now, existing.id]);
 
       return {
         id: existing.id,
@@ -260,7 +263,7 @@ export class AIInsightsRepository {
         entityId: null,
         data,
         confidence: null,
-        generatedAt: Math.floor(Date.now() / 1000),
+        generatedAt: now,
       };
     }
 
@@ -432,11 +435,12 @@ export class AIInsightsRepository {
       relatedKeywords.forEach(k => existingKeywords.add(k));
       data.relatedKeywords = Array.from(existingKeywords);
 
+      const now = Math.floor(Date.now() / 1000);
       await this.db.run(`
         UPDATE ai_insights
-        SET data = $1, generated_at = NOW()
-        WHERE id = $2
-      `, [JSON.stringify(data), existing.id]);
+        SET data = $1, generated_at = $2
+        WHERE id = $3
+      `, [JSON.stringify(data), now, existing.id]);
 
       return {
         id: existing.id,
@@ -444,7 +448,7 @@ export class AIInsightsRepository {
         entityId: null,
         data,
         confidence: null,
-        generatedAt: Math.floor(Date.now() / 1000),
+        generatedAt: now,
       };
     }
 

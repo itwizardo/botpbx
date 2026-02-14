@@ -293,7 +293,13 @@ export class AGIServer extends EventEmitter {
       const agiRequest = session.variables.get('agi_request') || '';
       const agiContext = session.context;
 
-      if (agiRequest.includes('/browser-call')) {
+      if (agiRequest.includes('/ai-call-end')) {
+        agiLogger.info(`AI Agent call ended: ${session.uniqueId}`);
+        this.emit('ai-call-end', agi, session);
+      } else if (agiRequest.includes('/test-call-end')) {
+        agiLogger.info(`Test call ended: ${session.uniqueId}`);
+        this.emit('test-call-end', agi, session);
+      } else if (agiRequest.includes('/browser-call')) {
         agiLogger.info(`Browser call start: ${session.uniqueId}`);
         this.emit('browser-call-start', agi, session);
       } else if (agiRequest.includes('/browser-hangup')) {

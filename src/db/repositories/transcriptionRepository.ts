@@ -336,19 +336,21 @@ export class TranscriptionRepository {
   }
 
   async markJobProcessing(id: string): Promise<void> {
+    const now = Math.floor(Date.now() / 1000);
     await this.db.run(`
       UPDATE transcription_jobs
-      SET status = 'processing', started_at = NOW(), attempts = attempts + 1
-      WHERE id = $1
-    `, [id]);
+      SET status = 'processing', started_at = $1, attempts = attempts + 1
+      WHERE id = $2
+    `, [now, id]);
   }
 
   async markJobCompleted(id: string, transcriptionId: string): Promise<void> {
+    const now = Math.floor(Date.now() / 1000);
     await this.db.run(`
       UPDATE transcription_jobs
-      SET status = 'completed', completed_at = NOW(), transcription_id = $1
-      WHERE id = $2
-    `, [transcriptionId, id]);
+      SET status = 'completed', completed_at = $1, transcription_id = $2
+      WHERE id = $3
+    `, [now, transcriptionId, id]);
     dbLogger.info(`Transcription job completed: ${id}`);
   }
 
@@ -358,12 +360,13 @@ export class TranscriptionRepository {
     if (!job) return;
 
     const newStatus = job.attempts >= job.maxAttempts ? 'failed' : 'pending';
+    const now = Math.floor(Date.now() / 1000);
 
     await this.db.run(`
       UPDATE transcription_jobs
-      SET status = $1, error_message = $2, completed_at = CASE WHEN $1 = 'failed' THEN NOW() ELSE NULL END
-      WHERE id = $3
-    `, [newStatus, errorMessage, id]);
+      SET status = $1, error_message = $2, completed_at = CASE WHEN $1 = 'failed' THEN $3 ELSE NULL END
+      WHERE id = $4
+    `, [newStatus, errorMessage, now, id]);
 
     if (newStatus === 'failed') {
       dbLogger.error(`Transcription job failed permanently: ${id} - ${errorMessage}`);
@@ -394,11 +397,12 @@ export class TranscriptionRepository {
   }
 
   async deleteOldCompletedJobs(daysOld: number): Promise<number> {
+    const cutoff = Math.floor(Date.now() / 1000) - (daysOld * 86400);
     const result = await this.db.run(`
       DELETE FROM transcription_jobs
       WHERE status = 'completed'
-        AND completed_at < NOW() - INTERVAL '${daysOld} days'
-    `);
+        AND completed_at < $1
+    `, [cutoff]);
     return result.rowCount;
   }
 
