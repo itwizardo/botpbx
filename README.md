@@ -26,35 +26,6 @@
 ---
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/itwizardo/botpbx/main/web-admin/public/login.gif" alt="BotPBX Demo" width="600" />
-</p>
-
----
-
-## What is BotPBX?
-
-BotPBX is a **complete phone system** built on Asterisk with a modern web interface. It works as a traditional PBX out of the box—extensions, voicemail, call queues, IVR menus, ring groups, call recording, and more. When you're ready, add AI voice agents that can handle calls, answer questions, and transfer to humans.
-
-**Use it as:**
-- A traditional office phone system
-- A call center solution with queues and monitoring
-- An AI-powered customer service platform
-- A hybrid of all three
-
-```bash
-curl -sSL https://botpbx.com/install.sh | bash
-```
-
-<p align="center">
-  <a href="https://github.com/itwizardo/botpbx"><img src="https://img.shields.io/badge/Star_on_GitHub-181717?style=for-the-badge&logo=github" alt="Star on GitHub"></a>
-  <a href="https://discord.gg/botpbx"><img src="https://img.shields.io/badge/Join_Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Join Discord"></a>
-</p>
-
----
-
-## Integrations
-
-<p align="center">
   <img src="https://img.shields.io/badge/Anthropic-191919?style=for-the-badge&logo=anthropic&logoColor=white" alt="Anthropic" />
   <img src="https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white" alt="OpenAI" />
   <img src="https://img.shields.io/badge/Twilio-F22F46?style=for-the-badge&logo=twilio&logoColor=white" alt="Twilio" />
@@ -67,608 +38,323 @@ curl -sSL https://botpbx.com/install.sh | bash
 
 ---
 
-## Core PBX Features
+<br>
 
-BotPBX is first and foremost a **fully-featured PBX**. No AI required—just a solid, modern phone system.
+<h2 align="center">Everything you need. Nothing you don't.</h2>
 
-### Extensions
+<p align="center">
+  <em>A complete phone system with AI built in. Set up in 5 minutes. Free forever.</em>
+</p>
 
-Every user gets their own extension with a full feature set.
-
-| Feature | Description |
-|---------|-------------|
-| **SIP Registration** | Connect any SIP phone, softphone, or mobile app |
-| **Voicemail** | Personal voicemail box with customizable greetings |
-| **Voicemail to Email** | Receive voicemails as email attachments |
-| **Voicemail Transcription** | AI converts voicemails to readable text |
-| **Call Forwarding** | Forward calls to mobile, another extension, or external number |
-| **Call Waiting** | Handle multiple calls with call waiting tones |
-| **Do Not Disturb** | Block incoming calls with a single toggle |
-| **Follow-Me** | Ring multiple devices simultaneously or sequentially |
-| **Caller ID** | Customizable outbound caller ID per extension |
-| **Call Recording** | Record calls per extension (always, on-demand, or never) |
-| **BLF Support** | Busy Lamp Field for monitoring other extensions |
-| **Presence** | Real-time status (available, busy, away, DND) |
-
-### Call Queues
-
-Professional call center functionality for handling high call volumes.
-
-| Feature | Description |
-|---------|-------------|
-| **6 Ring Strategies** | Ring All, Least Recent, Fewest Calls, Random, Round Robin, Linear |
-| **Position Announcements** | "You are caller number 3 in the queue" |
-| **Hold Time Estimates** | "Your estimated wait time is 2 minutes" |
-| **Music on Hold** | Custom audio or streaming music while waiting |
-| **Priority Levels** | VIP callers jump ahead in the queue |
-| **Agent Penalties** | Control which agents get calls first |
-| **Wrap-Up Time** | Give agents time between calls |
-| **Max Wait Time** | Overflow to voicemail or another destination |
-| **Queue Callbacks** | Let callers request a callback instead of waiting |
-| **Real-Time Stats** | Live dashboard showing queue performance |
-| **Agent Login/Logout** | Agents can join or leave queues dynamically |
-| **Supervisor Monitoring** | Listen, whisper, or barge into active calls |
-
-### Ring Groups
-
-Distribute calls to groups of extensions.
-
-| Feature | Description |
-|---------|-------------|
-| **Ring All** | All phones ring simultaneously |
-| **Hunt** | Ring extensions one by one until answered |
-| **Random** | Randomly select an extension to ring |
-| **Round Robin** | Rotate through extensions evenly |
-| **Ring Time** | Configurable ring duration per group |
-| **Failover** | If no answer, route to voicemail, IVR, or another destination |
-| **Skip Busy** | Automatically skip busy extensions |
-| **Confirm Calls** | Require agents to press a key to accept |
-
-### IVR (Auto Attendant)
-
-Create professional phone menus with a visual drag-and-drop builder.
-
-| Feature | Description |
-|---------|-------------|
-| **Visual Builder** | Drag-and-drop interface—no coding required |
-| **DTMF Input** | "Press 1 for Sales, 2 for Support..." |
-| **Speech Recognition** | Optional voice input for menu navigation |
-| **Multi-Level Menus** | Nested submenus for complex routing |
-| **Time Conditions** | Different greetings for business hours vs after hours |
-| **Holiday Routing** | Special handling for holidays |
-| **Custom Prompts** | Upload audio or use text-to-speech |
-| **Variable Support** | Dynamic prompts based on caller data |
-| **HTTP Requests** | Query external APIs during the call |
-| **Conditional Branching** | Route based on caller ID, time, or custom logic |
-| **Directory** | Dial-by-name company directory |
-| **Callback Requests** | Let callers leave a callback request |
-
-### Call Recording
-
-Comprehensive recording for compliance, training, and quality assurance.
-
-| Feature | Description |
-|---------|-------------|
-| **Global Recording** | Record all calls system-wide |
-| **Per-Extension** | Enable/disable recording per user |
-| **Per-Queue** | Record all queue calls |
-| **On-Demand** | Agents can start/stop recording mid-call |
-| **Pause/Resume** | Pause for sensitive information (credit cards, etc.) |
-| **Storage Management** | Automatic cleanup of old recordings |
-| **Playback** | Listen to recordings in the web interface |
-| **Download** | Export recordings as MP3 or WAV |
-| **Transcription** | AI transcribes recordings to searchable text |
-| **Search** | Find recordings by date, caller, extension, or transcript content |
-
-### Voicemail System
-
-Full-featured voicemail for every extension.
-
-| Feature | Description |
-|---------|-------------|
-| **Personal Greetings** | Custom unavailable and busy greetings |
-| **Email Delivery** | Receive voicemails as email attachments |
-| **Transcription** | AI converts voicemails to text |
-| **Visual Voicemail** | Manage messages in the web interface |
-| **PIN Protection** | Secure access to voicemail |
-| **Message Forwarding** | Forward voicemails to other extensions |
-| **Shared Mailboxes** | Group voicemail for departments |
-| **Auto-Delete** | Automatic cleanup of old messages |
-| **Unread Indicators** | BLF and MWI for new messages |
-| **Remote Access** | Check voicemail from any phone |
-
-### Inbound Call Routing
-
-Flexible routing for incoming calls.
-
-| Feature | Description |
-|---------|-------------|
-| **DID Routing** | Route each phone number to different destinations |
-| **Time-Based Routing** | Business hours vs after hours |
-| **Caller ID Routing** | VIP callers get special treatment |
-| **Geographic Routing** | Route by area code or country |
-| **Failover Chains** | Primary, secondary, tertiary destinations |
-| **Blacklist/Whitelist** | Block or allow specific callers |
-| **Anonymous Call Rejection** | Block calls with no caller ID |
-
-### Outbound Call Routing
-
-Control how calls leave your system.
-
-| Feature | Description |
-|---------|-------------|
-| **Pattern Matching** | Route based on dialed number patterns |
-| **Trunk Selection** | Choose which SIP trunk for each route |
-| **Least Cost Routing** | Automatically use the cheapest carrier |
-| **Failover** | If trunk fails, try the next one |
-| **Digit Manipulation** | Strip or prepend digits before dialing |
-| **Emergency Routing** | Special handling for 911/emergency calls |
-| **International Restrictions** | Block expensive destinations |
-| **PIN-Based Dialing** | Require authorization for long distance |
-
-### SIP Trunking
-
-Connect to any SIP provider.
-
-| Feature | Description |
-|---------|-------------|
-| **Any Provider** | Twilio, Telnyx, VoIP.ms, Flowroute, or any SIP trunk |
-| **Multiple Trunks** | Use different providers for different routes |
-| **Trunk Registration** | Support for both registration and IP-based auth |
-| **Codec Support** | G.711, G.729, Opus, and more |
-| **T.38 Fax** | Fax over IP support |
-| **DTMF Modes** | RFC2833, Inband, SIP INFO |
-| **NAT Traversal** | Works behind firewalls |
-| **Trunk Monitoring** | Real-time status and alerts |
-| **Failover** | Automatic failover between trunks |
-| **Load Balancing** | Distribute calls across multiple trunks |
+<br>
 
 ---
 
-## Browser Calling (WebRTC)
+<br>
 
-Make and receive calls directly from your web browser—no software to install.
+<h3 align="center">Dashboard</h3>
+<p align="center"><em>One screen. Every metric that matters.</em></p>
 
-| Feature | Description |
-|---------|-------------|
-| **Click-to-Call** | Call any number with one click |
-| **Incoming Calls** | Receive calls in your browser |
-| **HD Audio** | Opus codec at 48kHz for crystal-clear calls |
-| **Call Controls** | Hold, transfer, mute, DTMF |
-| **Call History** | Recent calls in the browser |
-| **Contact Integration** | Click-to-call from contact list |
-| **STUN/TURN** | Works on any network, even behind strict NAT |
-| **Multi-Tab** | Use across browser tabs |
+<p align="center">
+  <img src="images/01-dashboard.png" alt="Dashboard Overview" width="800" />
+</p>
 
-### Call Monitoring
-
-Supervisors can monitor live calls in real-time.
-
-| Feature | Description |
-|---------|-------------|
-| **Listen** | Silently listen to an active call |
-| **Whisper** | Speak to the agent without the caller hearing |
-| **Barge** | Join the call as a three-way conference |
-| **Live Dashboard** | See all active calls in real-time |
-| **Recording Controls** | Start/stop recording remotely |
+<br>
 
 ---
 
-## Outbound Campaigns
+<br>
 
-Automated dialing for sales, collections, surveys, and outreach.
+<h3 align="center">Auto Twilio Setup</h3>
+<p align="center"><em>Paste your SID + Token. Click Connect. Done.</em></p>
 
-| Feature | Description |
-|---------|-------------|
-| **Auto Dialer** | Automatically dial through contact lists |
-| **AMD** | Answering Machine Detection—skip voicemails or leave messages |
-| **Concurrent Calls** | Control how many calls dial simultaneously |
-| **Calls Per Minute** | Throttle dialing rate |
-| **Retry Logic** | Automatically retry no-answers and busy signals |
-| **Retry Delays** | Configure wait time between retries |
-| **Contact Import** | Upload contacts via CSV |
-| **Contact Groups** | Organize contacts into segments |
-| **DNC Compliance** | Do-not-call list management |
-| **Campaign Scheduling** | Run campaigns at specific times |
-| **Campaign Analytics** | Connected, voicemail, no answer, busy, failed stats |
-| **Transfer Modes** | Connect to agents, IVRs, or AI agents |
-| **Disposition Codes** | Track call outcomes |
-| **Script Display** | Show call scripts to agents |
+<p align="center">
+  <img src="images/02-twilio-setup.png" alt="Auto Twilio Setup" width="800" />
+</p>
+
+<br>
 
 ---
 
-## AI Voice Agents
+<br>
 
-When you're ready to automate, add AI agents that can handle conversations naturally.
+<h3 align="center">Any SIP Provider</h3>
+<p align="center"><em>Twilio, Telnyx, VoIP.ms, or bring your own. Full trunk control.</em></p>
 
-### LLM Providers
+<p align="center">
+  <img src="images/03-sip-trunk.png" alt="SIP Trunk Configuration" width="800" />
+</p>
 
-| Provider | Models | Best For |
-|----------|--------|----------|
-| **Anthropic** | Claude 3.5 Sonnet, Claude 3 Opus, Claude 3 Haiku | Complex reasoning, nuanced conversations |
-| **OpenAI** | GPT-4o, GPT-4o-mini | General purpose, fast responses |
-| **Groq** | Llama 3.3 70B | Ultra-fast inference, cost-effective |
-
-### AI Capabilities
-
-| Feature | Description |
-|---------|-------------|
-| **Natural Conversations** | Agents understand context and handle complex requests |
-| **Function Calling** | Agents can transfer calls, send SMS, schedule callbacks |
-| **Visual Flow Builder** | Design agent behavior with drag-and-drop |
-| **System Prompts** | Customize agent personality and instructions |
-| **Knowledge Base** | Upload documents for agents to reference |
-| **Conversation History** | Agents maintain context throughout the call |
-| **Handoff to Human** | Seamless transfer when human help is needed |
-| **Multi-Language** | Agents can speak multiple languages |
-
-### OpenAI Realtime API
-
-For the fastest voice responses, use OpenAI's Realtime API.
-
-| Feature | Description |
-|---------|-------------|
-| **Sub-500ms Latency** | Near-instant responses for natural conversation |
-| **Voice-to-Voice** | Direct speech input and output—no transcription delay |
-| **Interruption Handling** | Callers can interrupt the agent naturally |
-| **Emotion Detection** | Agents can detect and respond to caller emotions |
-
-### AI Function Calling
-
-Agents can take actions during calls.
-
-| Action | Description |
-|--------|-------------|
-| **Transfer** | Transfer to an extension, queue, or external number |
-| **Add to Queue** | Place caller in a call queue |
-| **Send SMS** | Send text message to the caller |
-| **Schedule Callback** | Book a callback appointment |
-| **End Call** | Politely end the conversation |
-| **Query API** | Fetch data from external systems |
-| **Create Ticket** | Log issues in support systems |
+<br>
 
 ---
 
-## Text-to-Speech (TTS)
+<br>
 
-Generate natural-sounding voice prompts for IVRs, queues, and AI agents.
+<h3 align="center">One-Click Test Call</h3>
+<p align="center"><em>Verify your trunk works before anything else.</em></p>
 
-| Provider | Type | Voices | Latency | Best For |
-|----------|------|--------|---------|----------|
-| **Piper** | Local | 100+ | Very Low | Free, offline, fast |
-| **Kokoro** | Local | 50+ | Low | High quality, offline |
-| **ElevenLabs** | Cloud | 1000+ | Medium | Premium, cloned voices |
-| **OpenAI** | Cloud | 6 | Low | Natural, consistent |
-| **Google Cloud** | Cloud | 400+ | Low | Multi-language |
-| **PlayHT** | Cloud | 800+ | Medium | Ultra-realistic |
-| **Cartesia** | Cloud | 100+ | Very Low | Real-time streaming |
+<p align="center">
+  <img src="images/04-test-call.png" alt="One-Click Test Call" width="800" />
+</p>
 
-### TTS Features
-
-| Feature | Description |
-|---------|-------------|
-| **Voice Preview** | Type a message and preview different voices |
-| **SSML Support** | Control pronunciation, pauses, and emphasis |
-| **Voice Cloning** | Clone custom voices (ElevenLabs) |
-| **Multi-Language** | Support for 50+ languages |
-| **Dynamic Generation** | Generate speech on-the-fly for queue announcements |
-| **Audio Caching** | Cache generated audio for faster playback |
+<br>
 
 ---
 
-## Speech-to-Text (STT)
+<br>
 
-Transcribe calls and voicemails automatically.
+<h3 align="center">HTTPS in One Click</h3>
+<p align="center"><em>Auto SSL via Let's Encrypt. Required for WebRTC. Zero config.</em></p>
 
-| Provider | Accuracy | Latency | Best For |
-|----------|----------|---------|----------|
-| **Deepgram** | High | Real-time | Live transcription |
-| **OpenAI Whisper** | Very High | Batch | Accuracy-critical |
-| **AssemblyAI** | Very High | Near Real-time | Full-featured (diarization, summaries) |
-| **Groq Whisper** | High | Very Fast | Speed-critical |
+<p align="center">
+  <img src="images/05-https-setup.png" alt="HTTPS Setup" width="800" />
+</p>
 
-### STT Features
-
-| Feature | Description |
-|---------|-------------|
-| **Live Transcription** | Real-time transcripts during calls |
-| **Call Recording Transcription** | Automatic transcription of recordings |
-| **Voicemail Transcription** | Convert voicemails to text |
-| **Speaker Diarization** | Identify who said what |
-| **Punctuation** | Automatic punctuation and formatting |
-| **Custom Vocabulary** | Improve accuracy for industry terms |
-| **Searchable** | Full-text search across all transcripts |
-| **Export** | Download transcripts as text or SRT |
+<br>
 
 ---
 
-## AI Analytics & Insights
+<br>
 
-Turn call data into actionable intelligence.
+<h3 align="center">7 TTS Providers. 30+ Languages.</h3>
+<p align="center"><em>OpenAI, ElevenLabs, Deepgram, Piper, Kokoro, Google, Cartesia. Preview any voice instantly.</em></p>
 
-### Call Analytics
+<p align="center">
+  <img src="images/06-tts-prompts.png" alt="Text-to-Speech Providers" width="800" />
+</p>
 
-| Metric | Description |
-|--------|-------------|
-| **Call Volume** | Hourly, daily, weekly, monthly trends |
-| **Answer Rate** | Percentage of calls answered |
-| **Abandonment Rate** | Calls that hung up before being answered |
-| **Average Handle Time** | How long calls last |
-| **Average Wait Time** | Time spent in queues |
-| **Peak Hours** | Identify busiest times |
-| **Agent Performance** | Calls handled, talk time, availability |
-| **Queue Performance** | Service level, wait times, abandonment |
-
-### AI Insights
-
-| Feature | Description |
-|---------|-------------|
-| **Intent Classification** | Automatically categorize calls (Sales, Support, Billing, Complaints) |
-| **Sentiment Analysis** | Detect caller emotions (positive, negative, neutral) |
-| **FAQ Extraction** | Auto-generate FAQs from call transcripts |
-| **Topic Detection** | Identify common discussion topics |
-| **Call Summaries** | AI-generated summaries of every call |
-| **Trend Analysis** | Track how topics and sentiment change over time |
-| **Alerts** | Get notified about negative sentiment or trending issues |
-
-### Agent Scoring
-
-| Metric | Description |
-|--------|-------------|
-| **Success Rate** | Percentage of calls with positive outcomes |
-| **Efficiency Score** | How quickly agents resolve issues |
-| **Sentiment Score** | How callers feel after interacting |
-| **Resolution Rate** | First-call resolution percentage |
-| **Quality Score** | Composite score of all metrics |
+<br>
 
 ---
 
-## Administration
+<br>
 
-### Multi-Tenant
+<h3 align="center">Local AI Voices</h3>
+<p align="center"><em>Kokoro: 82M-parameter model. Zero API cost. 7 natural voices on your server.</em></p>
 
-Run multiple organizations on a single installation.
+<p align="center">
+  <img src="images/07-kokoro-ai.png" alt="Kokoro Local AI Voices" width="800" />
+</p>
 
-| Feature | Description |
-|---------|-------------|
-| **Tenant Isolation** | Complete separation of data and configuration |
-| **Tenant Branding** | Custom logos and colors per tenant |
-| **Resource Limits** | Control extensions, trunks, and minutes per tenant |
-| **Billing Integration** | Track usage per tenant |
-| **Self-Service Portal** | Tenants manage their own users and settings |
-
-### User Management
-
-| Feature | Description |
-|---------|-------------|
-| **User Accounts** | Separate login for each admin user |
-| **Role-Based Access** | Admin, Manager, Agent, Read-Only roles |
-| **Custom Permissions** | Fine-grained access control |
-| **Teams** | Organize users into departments |
-| **Activity Logs** | Track who changed what |
-| **Two-Factor Auth** | Optional 2FA for admin accounts |
-
-### Global Search
-
-Find anything instantly.
-
-| Searchable | Examples |
-|------------|----------|
-| **Extensions** | Find by number, name, or email |
-| **Contacts** | Search contact database |
-| **Recordings** | Find by transcript content |
-| **Call Logs** | Search by caller ID, date, duration |
-| **Voicemails** | Find by transcript |
-| **IVR Menus** | Search menu names and prompts |
-| **Queues** | Find queues by name |
-| **AI Agents** | Search agent names and prompts |
-
-### Notifications
-
-| Channel | Events |
-|---------|--------|
-| **Email** | Voicemail, missed calls, system alerts |
-| **Telegram Bot** | Lead alerts, campaign notifications |
-| **Webhook** | Send events to external systems |
-| **In-App** | Real-time notifications in the dashboard |
+<br>
 
 ---
 
-## Developer Features
+<br>
 
-### REST API
+<h3 align="center">AI Call Transcription</h3>
+<p align="center"><em>Every call auto-transcribed. Searchable. 100% accuracy with Deepgram.</em></p>
 
-Full API access to all system functions.
+<p align="center">
+  <img src="images/08-ai-transcription.png" alt="AI Call Transcription" width="800" />
+</p>
 
-| Endpoint | Operations |
-|----------|------------|
-| `/api/extensions` | CRUD for extensions |
-| `/api/queues` | Manage call queues |
-| `/api/ring-groups` | Configure ring groups |
-| `/api/ivr` | IVR menu management |
-| `/api/trunks` | SIP trunk configuration |
-| `/api/calls` | Call logs and active calls |
-| `/api/recordings` | Recording access and management |
-| `/api/voicemails` | Voicemail management |
-| `/api/contacts` | Contact database |
-| `/api/campaigns` | Campaign management |
-| `/api/ai-agents` | AI agent configuration |
-| `/api/analytics` | Call statistics and reports |
-
-### WebSocket Events
-
-Real-time updates for building integrations.
-
-| Event | Description |
-|-------|-------------|
-| `call.new` | New call started |
-| `call.answer` | Call was answered |
-| `call.end` | Call ended |
-| `call.transfer` | Call was transferred |
-| `extension.status` | Extension status changed |
-| `queue.update` | Queue statistics updated |
-| `agent.conversation` | AI agent conversation turn |
-| `voicemail.new` | New voicemail received |
-| `recording.ready` | Recording finished processing |
-
-### Webhooks
-
-Trigger external systems on events.
-
-```json
-{
-  "event": "call.end",
-  "call_id": "abc123",
-  "from": "+15551234567",
-  "to": "100",
-  "duration": 245,
-  "recording_url": "https://..."
-}
-```
+<br>
 
 ---
 
-## Why We Built BotPBX
+<br>
 
-It started with frustration.
+<h3 align="center">Outbound Campaigns</h3>
+<p align="center"><em>AI Agent, IVR, Ring Group, or Extension. Full auto-dialer with AMD.</em></p>
 
-We needed a phone system—something modern, flexible, and easy to manage. So we did what anyone would do: we looked at what was out there.
+<p align="center">
+  <img src="images/09-campaigns.png" alt="Outbound Campaigns" width="800" />
+</p>
 
-**FreePBX** was the obvious first choice. Open source, battle-tested, tons of community support. But the moment we opened the interface, it felt like stepping back in time. The GUI looked like it hadn't been updated in a decade. Configuration was a maze of menus and cryptic options. Want to set up a simple IVR? Good luck navigating through dozens of screens. And don't even think about making changes without reading the wiki three times.
-
-Then we looked at **3CX**. Polished interface, modern features, solid reputation. But then came the pricing page. Licenses per user, annual fees, enterprise tiers. For a growing team, the costs added up fast. And if you wanted the really good features? That's the enterprise tier. More money.
-
-We also tried the cloud options—**Aircall, RingCentral, Dialpad**. Beautiful interfaces, sure. But locked into their ecosystem, expensive per-seat pricing, and zero flexibility. Want to customize something? Too bad. Want to self-host for compliance? Not an option.
-
-But here's what really got us: **we wanted more**. Not just a basic phone system, but real tools that could help our team be more productive. We wanted:
-
-- A system that could **transcribe every call automatically**—no more manual note-taking
-- **Voice agents** that could answer common questions and route calls intelligently
-- **An outbound dialer** to run sales and outreach campaigns without buying separate software
-- **Calling campaigns** where AI could have real conversations, not just play recordings
-- **Analytics** that actually told us what customers were asking about
-
-We searched everywhere. FreePBX? No built-in dialer, no AI, and the "AI modules" were just basic speech recognition. Want a dialer? Buy a separate product. 3CX? They added some AI features, but it's a paid add-on with limited capabilities. Dialer? Also extra. Twilio? You could build something, but you'd need a team of developers and months of work just to get basic functionality.
-
-**So we built it ourselves.**
-
-BotPBX is the phone system we wished existed:
-
-- **Modern interface** that doesn't make you want to throw your computer out the window
-- **5-minute setup** instead of hours of configuration
-- **All the traditional PBX features** you need—extensions, queues, IVR, recording, voicemail
-- **Outbound dialer** for sales, collections, and outreach campaigns with answering machine detection
-- **AI built in from day one**—transcription, voice agents, analytics, insights
-- **Open source** so you can self-host, customize, and never worry about licensing fees
-- **Any SIP provider** works—use Twilio, Telnyx, VoIP.ms, or whoever gives you the best rates
-
-We're not trying to replace Asterisk—we love Asterisk. We're just putting a modern face on it and adding the AI capabilities that businesses actually need in 2024.
-
-You can use BotPBX as a traditional phone system and never touch the AI features. Or you can go all-in with AI agents handling your calls. **Your choice.**
+<br>
 
 ---
 
-## How BotPBX Compares
+<br>
 
-### vs FreePBX
+<h3 align="center">IVR Menus</h3>
+<p align="center"><em>"Press 1 for Sales." Auto-attendant with zero coding.</em></p>
 
-| | BotPBX | FreePBX |
-|-|--------|---------|
-| **Interface** | Modern web app | Dated PHP interface |
-| **Setup** | 5 minutes | Hours of configuration |
-| **AI Agents** | Built-in | Not available |
-| **Transcription** | Built-in | Paid module |
-| **Visual IVR** | Drag-and-drop | Text-based |
-| **Browser Calling** | Built-in | Complex setup |
-| **Updates** | One command | Manual process |
+<p align="center">
+  <img src="images/10-ivr-menus.png" alt="IVR Menus" width="800" />
+</p>
 
-### vs 3CX
-
-| | BotPBX | 3CX |
-|-|--------|-----|
-| **License** | MIT (free forever) | Per-user pricing |
-| **Self-Hosting** | Full control | Limited features |
-| **AI Agents** | Built-in | Paid add-on |
-| **Open Source** | Yes | No |
-| **Customization** | Unlimited | Restricted |
-| **Multi-Tenant** | Built-in | Enterprise only |
-
-### vs Twilio
-
-| | BotPBX | Twilio |
-|-|--------|--------|
-| **Pricing** | Self-hosted (free) | Per-minute charges |
-| **Carrier** | Any SIP provider | Twilio only |
-| **PBX Features** | Complete system | Build from scratch |
-| **AI Agents** | Visual builder | Custom code |
-| **Data Ownership** | Your servers | Twilio's cloud |
+<br>
 
 ---
+
+<br>
+
+<h3 align="center">Ring Groups</h3>
+<p align="center"><em>Ring All, Hunt, Random, Round Robin. You decide how calls get answered.</em></p>
+
+<p align="center">
+  <img src="images/11-ring-groups.png" alt="Ring Groups" width="800" />
+</p>
+
+<br>
+
+---
+
+<br>
+
+<h3 align="center">Call Routing</h3>
+<p align="center"><em>Inbound and outbound. Pattern matching. Failover built in.</em></p>
+
+<p align="center">
+  <img src="images/12-routes.png" alt="Call Routing" width="800" />
+</p>
+
+<br>
+
+---
+
+<br>
+
+<h3 align="center">WebRTC Browser Dialer</h3>
+<p align="center"><em>Built-in softphone. Dial from your browser. No SIP phone needed.</em></p>
+
+<p align="center">
+  <img src="images/13-webrtc-dialer.png" alt="WebRTC Browser Dialer" width="800" />
+</p>
+
+<br>
+
+---
+
+<br>
+
+<h3 align="center">Audio Upload</h3>
+<p align="center"><em>WAV, MP3, OGG, GSM. Upload up to 50MB. Auto-converted for Asterisk.</em></p>
+
+<p align="center">
+  <img src="images/14-upload-audio.png" alt="Audio Upload" width="800" />
+</p>
+
+<br>
+
+---
+
+<br>
+
+<h3 align="center">Call Recording</h3>
+<p align="center"><em>One toggle. Every campaign call recorded automatically.</em></p>
+
+<p align="center">
+  <img src="images/15-call-recording.png" alt="Call Recording" width="800" />
+</p>
+
+<br>
+
+---
+
+<br>
+
+<h3 align="center">Music on Hold</h3>
+<p align="center"><em>Custom hold music from your prompt library. Keep callers happy.</em></p>
+
+<p align="center">
+  <img src="images/16-music-on-hold.png" alt="Music on Hold" width="800" />
+</p>
+
+<br>
+
+---
+
+<br>
+
+<h3 align="center">Profile Avatars</h3>
+<p align="center"><em>60+ avatars. Humans and robots. Your PBX, your personality.</em></p>
+
+<p align="center">
+  <img src="images/17-avatars.png" alt="Profile Avatars" width="800" />
+</p>
+
+<br>
+
+---
+
+<br>
 
 ## Quick Start
-
-### Requirements
-
-- Ubuntu 22.04+ or Debian 12+
-- 4GB RAM minimum (8GB recommended)
-- 2 CPU cores
-- 20GB disk space
-- Public IP address (for SIP connectivity)
-
-### Installation
 
 ```bash
 curl -sSL https://botpbx.com/install.sh | bash
 ```
 
-The installer automatically:
-- Installs Node.js 23, PostgreSQL, Asterisk 22, PM2, ffmpeg
-- Configures PostgreSQL database with auto-generated credentials
-- Configures Asterisk AMI, PJSIP, and dialplan
-- Generates all security credentials (JWT, passwords)
-- Builds backend and frontend
-- Starts all services via PM2
-- Creates default admin user
+That's it. The installer handles Node.js 23, PostgreSQL, Asterisk 22, PM2, ffmpeg, and all configuration. Zero prompts. Open `https://your-server-ip:3000` and start calling.
 
-**Zero prompts - everything is generated automatically!**
+**Requirements:** Ubuntu 22.04+ or Debian 12+, 4GB RAM (8GB recommended), 2 CPU cores, public IP.
 
-### After Installation
+---
 
-1. Open `https://your-server-ip:3000` in your browser
-2. Log in with the credentials shown at the end of installation
-3. Add a SIP trunk (Twilio, Telnyx, VoIP.ms, etc.)
-4. Create extensions for your users
-5. Configure inbound routing for your phone numbers
-6. Start making and receiving calls!
+## What is BotPBX?
 
-### Ports
+BotPBX is a **complete phone system** built on Asterisk with a modern web interface. It works as a traditional PBX out of the box — extensions, voicemail, call queues, IVR menus, ring groups, call recording, and more. When you're ready, add AI voice agents that can handle calls, answer questions, and transfer to humans.
 
-| Port | Service | Protocol |
-|------|---------|----------|
-| 3000 | Backend API | TCP |
-| 3001 | Frontend | TCP |
-| 4573 | AGI Server | TCP |
-| 5038 | Asterisk AMI | TCP |
-| 5060 | SIP Signaling | UDP/TCP |
-| 9092 | AudioSocket (AI) | TCP |
-| 9093 | Browser Audio | TCP |
-| 10000-20000 | RTP Media | UDP |
+**Use it as** a traditional office phone system, a call center with queues and monitoring, an AI-powered customer service platform, or a hybrid of all three.
 
-### Service Management
+---
 
-```bash
-# View status
-pm2 status
+## Why BotPBX
 
-# View logs
-pm2 logs
+We looked at everything. FreePBX felt like 2010. 3CX wanted per-user licensing. Cloud PBX platforms locked you in and charged per seat. None of them had what we actually needed: AI transcription, voice agents, an outbound dialer, and a UI that didn't make you suffer.
 
-# Restart services
-pm2 restart all
+**So we built it.**
 
-# Update BotPBX
-git pull && npm install && npm run build && pm2 restart all
-```
+- **Modern UI** — clean, fast, built with Next.js and Tailwind
+- **5-minute setup** — one command, zero prompts
+- **AI from day one** — transcription, voice agents, analytics
+- **Any SIP provider** — Twilio, Telnyx, VoIP.ms, or whoever you want
+- **Local AI voices** — Kokoro and Piper run on your server, zero API cost
+- **Outbound dialer** — auto-dialer with AMD, campaigns, retry logic
+- **Open source** — self-host, customize, no licensing fees. Ever.
+
+---
+
+## Features
+
+**PBX Core**
+- Extensions with SIP registration, voicemail, call forwarding, DND, BLF, presence
+- Call queues with 6 ring strategies, position announcements, callbacks, supervisor monitoring
+- Ring groups (Ring All, Hunt, Random, Round Robin) with failover
+- IVR auto-attendant with DTMF, time conditions, holiday routing
+- Inbound/outbound call routing with pattern matching and failover chains
+- SIP trunking with any provider, multiple trunks, codec support, NAT traversal
+
+**Calling**
+- WebRTC browser dialer — make and receive calls with no SIP phone
+- Call recording (global, per-extension, per-queue, on-demand)
+- Music on hold with custom audio
+- Call monitoring: listen, whisper, barge
+
+**AI & Voice**
+- 3 LLM providers: Anthropic Claude, OpenAI GPT-4o, Groq Llama
+- 7 TTS providers: Piper, Kokoro, ElevenLabs, OpenAI, Google, Cartesia, PlayHT
+- 4 STT providers: Deepgram, Whisper, AssemblyAI, Groq
+- AI voice agents with function calling (transfer, SMS, callbacks)
+- OpenAI Realtime API: sub-500ms voice-to-voice
+- Live call transcription and voicemail transcription
+
+**Campaigns & Analytics**
+- Outbound auto-dialer with answering machine detection
+- Contact import (CSV), retry logic, DNC compliance
+- Sentiment analysis, intent classification, call summaries
+- Real-time dashboards and agent scoring
+
+**Admin**
+- Multi-tenant with complete isolation
+- Role-based access control
+- Global search across extensions, contacts, recordings, transcripts
+- REST API, WebSocket events, webhooks
+- Telegram bot notifications
+
+---
+
+## BotPBX vs The Rest
+
+**vs FreePBX** — Modern UI instead of a dated PHP interface. 5-minute setup instead of hours. AI agents, transcription, and browser calling built in. Not bolted on.
+
+**vs 3CX** — MIT licensed, free forever. No per-user pricing. Full open source. Multi-tenant built in, not enterprise-only.
+
+**vs Twilio** — A complete phone system, not a toolkit. Use any SIP provider, not just Twilio. Visual builder for AI agents instead of custom code. Your data stays on your servers.
 
 ---
 
@@ -677,108 +363,40 @@ git pull && npm install && npm run build && pm2 restart all
 ```
 botpbx/
 ├── src/                          # Backend (Node.js/TypeScript)
-│   ├── api/                      # Fastify REST API
-│   │   ├── routes/               # 33+ API endpoint files
-│   │   ├── middleware/           # Auth, tenant isolation
-│   │   └── websocket.ts          # Real-time events
-│   │
-│   ├── ai/                       # AI Integration
-│   │   ├── llm/                  # Claude, GPT, Groq providers
-│   │   ├── stt/                  # Deepgram, Whisper, AssemblyAI
-│   │   ├── functions/            # AI function calling
-│   │   └── conversationEngine.ts # Conversation orchestration
-│   │
-│   ├── asterisk/                 # Asterisk Integration
-│   │   ├── amiClient.ts          # AMI connection
-│   │   ├── agiServer.ts          # AGI for call control
-│   │   ├── audioSocketServer.ts  # Real-time audio streaming
-│   │   └── ivrController.ts      # IVR execution engine
-│   │
-│   ├── services/                 # Business Logic
-│   │   ├── ttsService.ts         # 7 TTS providers
-│   │   ├── transcriptionService.ts
-│   │   ├── dialerService.ts      # Campaign engine
-│   │   ├── queueAnnouncementService.ts
-│   │   └── ...                   # 20+ service files
-│   │
-│   └── db/                       # Data Layer
-│       ├── database.ts           # PostgreSQL connection
-│       ├── migrations.ts         # Schema management
-│       └── repositories/         # 27 data access files
+│   ├── api/                      # Fastify REST API (33+ endpoints)
+│   ├── ai/                       # LLM, STT, TTS, function calling
+│   ├── asterisk/                 # AMI, AGI, AudioSocket, IVR engine
+│   ├── services/                 # 20+ business logic services
+│   └── db/                       # PostgreSQL, migrations, 27 repositories
 │
-├── web-admin/                    # Frontend (Next.js)
+├── web-admin/                    # Frontend (Next.js 14)
 │   └── src/
-│       ├── app/                  # Pages and routing
-│       │   ├── (dashboard)/      # Main application
-│       │   │   ├── extensions/
-│       │   │   ├── queues/
-│       │   │   ├── ivr/
-│       │   │   ├── ai-agents/
-│       │   │   ├── campaigns/
-│       │   │   ├── analytics/
-│       │   │   └── settings/
-│       │   └── (auth)/           # Authentication
+│       ├── app/                  # Pages: extensions, queues, IVR, AI agents, campaigns, analytics, settings
 │       ├── components/           # Reusable UI
 │       └── stores/               # State management
 │
 └── config/                       # Configuration
 ```
 
-### Technology Stack
-
-| Layer | Technology |
-|-------|------------|
-| **Backend** | Node.js 23, TypeScript, Fastify |
-| **Frontend** | Next.js 14, React, Tailwind CSS |
-| **Database** | PostgreSQL 15 |
-| **Telephony** | Asterisk 22, PJSIP |
-| **Real-time** | WebSocket, AudioSocket |
-| **AI** | Claude, GPT-4o, Groq |
-| **TTS** | Piper, Kokoro, ElevenLabs, OpenAI, Google |
-| **STT** | Deepgram, Whisper, AssemblyAI |
+**Stack:** Node.js 23, TypeScript, Fastify, Next.js 14, React, Tailwind CSS, PostgreSQL 15, Asterisk 22, PJSIP
 
 ---
 
-## Pricing
+## Ports
 
-### Self-Hosted — **Free**
-
-- MIT Licensed
-- Unlimited extensions
-- Unlimited AI agents
-- Unlimited calls
-- Community support
-- Full source code access
-
-### Managed Cloud — **$99/mo**
-
-- Everything in Self-Hosted
-- Hosted infrastructure
-- Daily backups
-- Automatic updates
-- Priority email support
-- 99.9% uptime SLA
-
-[Start 7-Day Trial](https://botpbx.com/signup)
-
-### Enterprise — **Custom**
-
-- Custom SLAs
-- Dedicated infrastructure
-- SSO integration
-- Audit logs
-- White labeling
-- Dedicated support
-
-[Contact Sales](mailto:sales@botpbx.com)
+| Port | Service |
+|------|---------|
+| 3000 | Backend API |
+| 3001 | Frontend |
+| 4573 | AGI Server |
+| 5060 | SIP Signaling (UDP/TCP) |
+| 9092 | AudioSocket (AI) |
+| 9093 | Browser Audio |
+| 10000-20000 | RTP Media (UDP) |
 
 ---
 
 ## Contributing
-
-BotPBX is open source and community-driven. We welcome contributions!
-
-### Quick Start
 
 ```bash
 git clone https://github.com/itwizardo/botpbx.git
@@ -787,45 +405,19 @@ npm install
 npm run dev
 ```
 
-### Ways to Contribute
-
-| Type | How |
-|------|-----|
-| **Report Bugs** | [Open an issue](https://github.com/itwizardo/botpbx/issues) |
-| **Suggest Features** | [Start a discussion](https://github.com/itwizardo/botpbx/discussions) |
-| **Improve Docs** | PRs welcome for documentation |
-| **Submit Code** | Fix bugs or add features |
-| **Translations** | Help translate the UI |
-
-### Areas Needing Help
-
-- Documentation improvements
-- New TTS/STT provider integrations
-- Test coverage
-- UI/UX enhancements
-- Translations to other languages
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+Report bugs, suggest features, submit PRs, improve docs, or help with translations. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ---
 
 ## Documentation
 
-- [Full Documentation](https://botpbx.com/docs)
-- [Installation Guide](https://botpbx.com/docs/installation)
-- [Configuration Guide](https://botpbx.com/docs/configuration)
-- [API Reference](https://botpbx.com/docs/api)
-- [AI Agents Guide](https://botpbx.com/docs/ai-agents)
-- [Troubleshooting](https://botpbx.com/docs/troubleshooting)
+[Full Docs](https://botpbx.com/docs) · [Installation](https://botpbx.com/docs/installation) · [Configuration](https://botpbx.com/docs/configuration) · [API Reference](https://botpbx.com/docs/api) · [AI Agents Guide](https://botpbx.com/docs/ai-agents)
 
 ---
 
 ## Community
 
-- [Discord](https://discord.gg/botpbx) — Chat with the community
-- [Twitter](https://twitter.com/botpbx) — Follow for updates
-- [GitHub Discussions](https://github.com/itwizardo/botpbx/discussions) — Ask questions
-- [Email](mailto:hello@botpbx.com) — Get in touch
+[Discord](https://discord.gg/botpbx) · [Twitter](https://twitter.com/botpbx) · [GitHub Discussions](https://github.com/itwizardo/botpbx/discussions) · [Email](mailto:hello@botpbx.com)
 
 ---
 
@@ -836,7 +428,7 @@ BotPBX is open source under the [MIT License](LICENSE).
 ---
 
 <p align="center">
-  <strong>Built with ❤️ by people who were tired of settling for less.</strong>
+  <strong>Built with love by people who were tired of settling for less.</strong>
 </p>
 
 <p align="center">
